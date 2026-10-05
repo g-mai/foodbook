@@ -6,6 +6,8 @@ import tailwindcss from '@tailwindcss/vite';
 // https://astro.build/config
 export default defineConfig({
   output: 'static',
+  // A personal recipe must not silently replace a starter with the same ID.
+  prerenderConflictBehavior: 'error',
   integrations: [react()],
   vite: {
     plugins: [tailwindcss()],

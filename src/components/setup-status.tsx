@@ -17,7 +17,7 @@ export function SetupStatus() {
           <h2>Cookbook foundation ready</h2>
         </CardTitle>
         <CardDescription>
-          The tools are in place. Recipes and the browsing experience come next.
+          Recipe pages are ready. Search and filters come next.
         </CardDescription>
       </CardHeader>
       <CardContent>

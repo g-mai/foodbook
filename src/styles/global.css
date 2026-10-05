@@ -128,3 +128,83 @@
     @apply font-sans;
   }
 }
+
+@layer components {
+  .recipe-content {
+    @apply flex flex-col gap-5 leading-relaxed;
+    overflow-wrap: anywhere;
+  }
+
+  .recipe-content h2 {
+    @apply text-2xl font-semibold tracking-tight;
+  }
+
+  .recipe-content h2:not(:first-child) {
+    @apply mt-5;
+  }
+
+  .recipe-content h3 {
+    @apply text-xl font-semibold;
+  }
+
+  .recipe-content :is(ol, ul) {
+    @apply flex flex-col gap-4 pl-6;
+  }
+
+  .recipe-content ol {
+    @apply list-decimal;
+  }
+
+  .recipe-content ul {
+    @apply list-disc;
+  }
+
+  .recipe-content li::marker {
+    @apply font-semibold;
+  }
+
+  .recipe-content li > :is(p, ol, ul) + :is(p, ol, ul) {
+    @apply mt-3;
+  }
+
+  .recipe-content a {
+    @apply underline underline-offset-4;
+  }
+
+  .recipe-content img {
+    @apply h-auto max-w-full rounded-lg;
+  }
+}
+
+@media print {
+  .recipe-page {
+    max-width: none;
+    padding: 0;
+    color: black;
+    background: white;
+  }
+
+  .recipe-page .text-muted-foreground {
+    color: black;
+  }
+
+  .recipe-photo {
+    display: none;
+  }
+
+  .recipe-body {
+    display: block;
+  }
+
+  .recipe-content {
+    margin-top: 2rem;
+  }
+
+  .recipe-page :is(h1, h2, h3) {
+    break-after: avoid;
+  }
+
+  .recipe-page li {
+    break-inside: avoid;
+  }
+}

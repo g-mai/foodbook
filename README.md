@@ -4,7 +4,7 @@ A personal recipe website you can create and maintain with an AI agent.
 
 Save recipes from around the web, keep them in a collection you own, and read them in a clean, mobile-friendly format. Recipes live in your GitHub repository as Markdown files. Astro turns them into a static website, and the planned GitHub Actions workflow will build and deploy production-branch changes to Cloudflare.
 
-**Status:** Foundation implemented. The Astro application uses static output, Tailwind CSS, React, and shadcn/ui, with a static-assets-only Wrangler configuration. Personal site settings and a stylesheet override entry point are connected to the placeholder homepage. Personal content directories and a shared-history update guide are in place. Recipe schemas/rendering, the cookbook UI, GitHub Actions workflows, and the import skill are still to be implemented.
+**Status:** Foundation, recipe format, and individual recipe pages implemented. The Astro application uses static output, Tailwind CSS, React, and shadcn/ui, with a static-assets-only Wrangler configuration. The homepage lists recipes newest-first alongside the setup status. Recipe pages show optimized photos, ingredients, Markdown instructions and notes, source links, and print-friendly styles. Recipe language, measurement, and starter-inclusion preferences have shared defaults and personal overrides. An Astro content collection validates recipe frontmatter and images, with schema and collection tests and an included chicken cacciatore recipe that also serves as a format example. Personal content directories and a shared-history update guide are in place. The full collection UI, search/filters, GitHub Actions workflows, and the import skill are still to be implemented.
 
 ## The idea
 
@@ -41,6 +41,7 @@ See [Personal repositories and upstream updates](docs/upstream-updates.md) for i
 ```text
 foodbook.config.ts             Personal site-setting overrides
 src/
+  content.config.ts            Recipe content collection and validation
   content/recipes/             Personal Markdown recipes (currently empty)
   assets/recipes/              Personal recipe photos (currently empty)
   styles/
@@ -49,15 +50,18 @@ src/
   lib/
     foodbook-defaults.ts        Shared settings type and default values
     foodbook.ts                 Resolves defaults + personal overrides
+    recipe-schema.ts            Shared recipe and ingredient schemas
   components/                  Editable shared UI components
   layouts/                     Editable shared layouts
   pages/                       Editable shared pages
-examples/                      Shared demonstration content, outside the site
+examples/
+  default-recipes/              Included shared starter recipes
+  images/                      Shared recipe images
 docs/upstream-updates.md        Setup and update workflow
 wrangler.jsonc                 Your deployment's Worker name and asset settings
 ```
 
-Personal content directories contain only `.gitkeep` placeholders in the public project. Recipes, photos, and personal overrides should be committed in the personal repository, not ignored: GitHub Actions and cloud agents need them. Shared examples belong in `examples/` and are not automatically added to the cookbook. The content schema and recipe pages are not implemented yet, so adding a recipe file alone does not currently render it.
+Personal content directories contain only `.gitkeep` placeholders in the public project. Recipes, photos, and personal overrides should be committed in the personal repository, not ignored: GitHub Actions and cloud agents need them. Shared starter recipes in `examples/default-recipes/` are loaded alongside personal recipes by default, unless `includeDefaultRecipes` is disabled. Every loaded recipe generates a page at `/recipes/<filename-without-extension>/` and a link on the homepage.
 
 To personalize the current homepage and default page metadata, edit `foodbook.config.ts`:
 
@@ -72,6 +76,41 @@ export default {
 ```
 
 Omitted settings inherit shared defaults. Upstream development should add or change defaults in `src/lib/foodbook-defaults.ts` instead of routinely modifying the personal override file.
+
+### Recipe import preferences
+
+New recipe imports default to **English (`en`)** and **metric** measurements. To change these defaults in your personal cookbook, add overrides to `foodbook.config.ts`:
+
+```ts
+import type { FoodbookConfig } from './src/lib/foodbook-defaults';
+
+export default {
+  language: 'it-IT',
+  measurementSystem: 'metric',
+} satisfies Partial<FoodbookConfig>;
+```
+
+- `language` is a BCP 47 language tag, such as `en`, `en-US`, or `it-IT`.
+- `measurementSystem` accepts `metric` or `imperial`. In Foodbook, `imperial` means **US customary** units, including US cups, teaspoons, and tablespoons, not British Imperial volumes.
+- Settings are independent: an English-language cookbook can use metric measurements.
+- The planned importer will use the resolved settings from `src/lib/foodbook.ts`, which combines shared defaults with personal overrides. An explicit preference in an import request takes precedence for that import.
+- Changing defaults does not translate the website interface, rewrite existing recipes, or perform conversions itself. Each recipe records its own language and measurement system. Translation and conversion during imports are not implemented yet; updating existing recipes will require an explicit request.
+
+### Bundled starter recipes
+
+`includeDefaultRecipes` defaults to `true`. To show only your personal recipes, set it to `false` in your personal `foodbook.config.ts`:
+
+```ts
+import type { FoodbookConfig } from './src/lib/foodbook-defaults';
+
+export default {
+  includeDefaultRecipes: false,
+} satisfies Partial<FoodbookConfig>;
+```
+
+Personal recipes in `src/content/recipes/` continue to load. Bundled files and images stay in the repository, but their recipes are excluded from the collection, homepage links, and generated recipe pages. Future starter recipes received through upstream merges are excluded too. The setting does not delete files or change recipe language or measurements. Rebuild the site after changing it; restart a running dev server to reload content configuration reliably.
+
+### Style overrides
 
 `src/styles/custom.css` loads after the shared stylesheet. Use it for personal selectors or theme-token overrides, for example:
 
@@ -141,7 +180,7 @@ The repository is the source of truth. Changes become visible on the website aft
 - Blog-style homepage with a search bar, category/tag filters, and a responsive grid of recipe cards.
 - One required photo per recipe, reused on its homepage card and individual page, with descriptive alt text.
 - Individual recipe pages with ingredients, instructions, servings, and preparation/cooking times when available.
-- Original source links and attribution.
+- Original recipe source links.
 - Mobile-friendly reading and print styles.
 - Extend the existing site settings and stylesheet overrides as the cookbook UI grows.
 - An agent skill for importing recipes from URLs.
@@ -177,21 +216,22 @@ Use pnpm and a supported Node.js version: 22.22.3+ on the 22.x line, 24.16.0+ on
 pnpm install --frozen-lockfile
 ```
 
-| Command                      | Purpose                                                               |
-| ---------------------------- | --------------------------------------------------------------------- |
-| `pnpm dev --background`      | Start the local Astro dev server in the background                    |
-| `pnpm exec astro dev status` | Show the background server status                                     |
-| `pnpm exec astro dev logs`   | Read the background server logs                                       |
-| `pnpm exec astro dev stop`   | Stop the background server                                            |
-| `pnpm check`                 | Type-check Astro and TypeScript source files                          |
-| `pnpm lint`                  | Lint JavaScript, TypeScript, React, and Astro files; fail on warnings |
-| `pnpm lint:fix`              | Apply available ESLint fixes locally                                  |
-| `pnpm format`                | Format source, configuration, Markdown, and YAML locally              |
-| `pnpm format:check`          | Check formatting without modifying files                              |
-| `pnpm validate`              | Run formatting checks, linting, type checks, and the production build |
-| `pnpm build`                 | Generate the static website in `dist/`                                |
-| `pnpm preview`               | Build and preview the static website locally                          |
-| `pnpm deploy:dry-run`        | Build and verify Wrangler deployment without publishing               |
+| Command                      | Purpose                                                                      |
+| ---------------------------- | ---------------------------------------------------------------------------- |
+| `pnpm dev --background`      | Start the local Astro dev server in the background                           |
+| `pnpm exec astro dev status` | Show the background server status                                            |
+| `pnpm exec astro dev logs`   | Read the background server logs                                              |
+| `pnpm exec astro dev stop`   | Stop the background server                                                   |
+| `pnpm check`                 | Type-check Astro and TypeScript source files                                 |
+| `pnpm test`                  | Run recipe schema and collection tests                                       |
+| `pnpm lint`                  | Lint JavaScript, TypeScript, React, and Astro files; fail on warnings        |
+| `pnpm lint:fix`              | Apply available ESLint fixes locally                                         |
+| `pnpm format`                | Format source, configuration, Markdown, and YAML locally                     |
+| `pnpm format:check`          | Check formatting without modifying files                                     |
+| `pnpm validate`              | Run formatting checks, linting, tests, type checks, and the production build |
+| `pnpm build`                 | Generate the static website in `dist/`                                       |
+| `pnpm preview`               | Build and preview the static website locally                                 |
+| `pnpm deploy:dry-run`        | Build and verify Wrangler deployment without publishing                      |
 
 There is intentionally no live `deploy` script under the current safety restriction.
 
@@ -201,7 +241,7 @@ There is intentionally no live `deploy` script under the current safety restrict
 - `prettier.config.mjs` formats Astro through the official Astro 7-aware plugin. In React/JavaScript/TypeScript and CSS, it also sorts Tailwind classes using the v4 stylesheet, including classes passed to `cn()` and `cva()`. The current Tailwind sorter does not yet support the new Astro formatter's syntax tree, so `.astro` files use only the Astro plugin and do not get automatic class sorting. Prettier also formats Markdown recipe files and YAML workflows. ESLint does not lint Markdown, YAML, or CSS.
 - Prettier owns formatting; `eslint-config-prettier` disables conflicting ESLint style rules. Build output, generated Astro/Wrangler files, and dependencies are excluded. The pnpm lockfile is left to pnpm.
 - VS Code workspace settings enable Prettier formatting and ESLint fixes on explicit saves, including Astro files. Install the recommended Astro, ESLint, Prettier, and Tailwind CSS extensions when prompted (or use **Extensions: Show Recommended Extensions**). Tailwind-specific CSS at-rules are allowed by the editor.
-- Use `pnpm validate` before handing off changes; it performs no deployment. These commands are ready for the future GitHub Actions workflow, which is not configured yet.
+- Use `pnpm validate` before handing off changes; it performs no deployment. It includes Node's built-in test runner for recipe schema tests and isolated builds testing starter inclusion. These commands are ready for the future GitHub Actions workflow, which is not configured yet.
 
 ### UI foundation
 
@@ -213,7 +253,15 @@ There is intentionally no live `deploy` script under the current safety restrict
 - `src/components/ui/` contains the initial Button, Card, Badge, and Input components added from the official shadcn registry.
 - `@/*` imports resolve to `src/*`. Use `pnpm dlx shadcn@latest add @shadcn/<component>` to add further official components as needed.
 
-Only components needing browser interactivity should use an Astro `client:*` directive. The setup placeholder renders React components at build time without shipping a React client bundle.
+Only components needing browser interactivity should use an Astro `client:*` directive. The setup status and recipe badges/buttons render React components at build time without shipping a React client bundle. A small native script opens the browser's print dialog on recipe pages.
+
+### Preview a recipe
+
+Start the local server with `pnpm dev --background`, then open the URL reported by Astro. With the default port, the starter recipe is at:
+
+<http://localhost:4321/recipes/pollo-alla-cacciatora/>
+
+The homepage also links to each recipe. The recipe page uses the saved recipe language for its document and content; navigation labels remain English. Use **Print recipe** or your browser's print command for a layout without the photo or navigation, with the original source URL included.
 
 ### What “one prompt” means
 
@@ -235,38 +283,37 @@ See [ChatGPT Work and Codex](https://help.openai.com/en/articles/20001275-chatgp
 
 ## Recipe content
 
-The proposed format is one Markdown file per recipe. Structured metadata lives in YAML frontmatter; instructions live in the Markdown body.
+Each personal recipe is one Markdown file directly inside `src/content/recipes/`. Bundled starter recipes live in `examples/default-recipes/` and use the same format. Structured metadata and ingredients live in YAML frontmatter; instructions and optional notes live in the Markdown body. `src/content.config.ts` registers personal recipes and, when `includeDefaultRecipes` is enabled, bundled recipes in the same collection, using the schema in `src/lib/recipe-schema.ts`.
 
-```markdown
----
-title: Lemon Pasta
-slug: lemon-pasta
-sourceUrl: https://example.com/lemon-pasta
-sourceName: Example Kitchen
-servings: 2
-prepMinutes: 10
-cookMinutes: 15
-tags:
-  - pasta
-  - vegetarian
-categories:
-  - main-course
-image: ../../assets/recipes/lemon-pasta.jpg
-imageAlt: Spaghetti with lemon zest in a shallow bowl
-ingredients:
-  - 200 g spaghetti
-  - 1 lemon
-  - 2 tbsp olive oil
----
+Use a stable lowercase, hyphenated filename such as `pollo-alla-cacciatora.md`. Astro derives the recipe ID from the filename; there is no separate `slug` field. Filenames must be unique across loaded starter and personal recipes; duplicate IDs fail validation. Changing the title does not change the ID. Avoid renaming files after publishing.
 
-## Instructions
+See [the complete chicken cacciatore recipe](examples/default-recipes/pollo-alla-cacciatora.md) for a real example of the format, including cuisine categories, structured ingredients, optional notes, and a local image.
 
-1. Cook the spaghetti in salted water.
-2. Combine the lemon zest, lemon juice, and olive oil.
-3. Toss with the drained pasta and a little reserved cooking water.
-```
+### Required fields
 
-This example illustrates the proposed schema; the final schema will be defined alongside the application. The image path is illustrative and assumes the recipe lives in `src/content/recipes/`. Each recipe requires one repository-local photo and descriptive alt text; an import without a usable photo should be flagged for user input rather than silently published. Ingredient text should preserve the source's quantities and units. Unknown optional fields should be omitted rather than guessed.
+- `title` and `sourceUrl`: a readable title and the original HTTP(S) recipe URL. No separate author, site, or original-language metadata is stored.
+- `addedAt`: the time the recipe was first added, as a quoted ISO 8601 UTC timestamp. Preserve it during edits and re-imports. Future collection views can sort newest-first with `Date.parse(b.data.addedAt) - Date.parse(a.data.addedAt)`.
+- `language` and `measurementSystem`: the actual language and units saved in this recipe, normally taken from cookbook preferences when importing. They never inherit changing preferences at build time.
+- `image` and `imageAlt`: one local recipe image and descriptive alt text. Paths are relative to the recipe file, normally `../../assets/recipes/<filename>`. Astro validates the image file during content sync/build. There are no image attribution or permission fields.
+- `ingredients`: at least one structured ingredient with a nonempty `name`.
+
+### Optional fields and filtering
+
+- `servings`: a positive number. `prepMinutes` and `cookMinutes`: nonnegative numbers. Omit unknown values rather than guessing them.
+- `categories`: cuisine labels such as `italian`, `greek`, or `american`. A recipe can have more than one category; omit the list when cuisine is unknown.
+- `tags`: other labels such as `main-course`, `air-fryer`, or `chicken`.
+
+Categories and tags are open-ended lowercase, hyphenated labels, not a predefined list. Keep these filter keys consistent even when recipe text is translated. Omitted lists become empty arrays.
+
+### Ingredients and instructions
+
+An ingredient has a required `name` and optional `quantity`, `unit`, and `notes`. Use positive numbers for measurable amounts, including decimals for fractions (`0.5`). Use text for ranges (`'100-150'`) or qualitative amounts (`to taste`). Counts such as one carrot do not need a unit. Omit an unknown quantity; a unit requires a quantity. Preparation details and optionality belong in `notes`, such as `finely chopped` or `optional`.
+
+There is no duplicate display text or original ingredient text to keep in sync. Measured quantities are saved in the recipe's chosen measurement system; familiar cooking spoons can remain in metric recipes. The schema validates structure, not the correctness of conversions.
+
+Write ordered steps under `## Instructions` in the Markdown body. Optional tips, substitutions, and personal notes can follow under `## Notes`. The frontmatter schema does not validate the prose of these sections; agents must check that instructions are present and complete.
+
+See [the shared content guide](examples/README.md) for the bundled starter recipes that also serve as format examples. They are included by default and excluded when `includeDefaultRecipes: false` is set.
 
 ## Agent import workflow
 
@@ -274,12 +321,12 @@ Work in the personal cookbook repository, using its local content and configurat
 
 The planned skill will instruct an agent to:
 
-1. Read the supplied URL and look for structured `Recipe` JSON-LD.
+1. Read cookbook preferences and any explicit request overrides, then read the supplied URL and look for structured `Recipe` JSON-LD.
 2. Extract the recipe from the visible page when structured data is missing or incomplete.
-3. Preserve ingredient quantities, units, instruction order, and source attribution.
+3. Translate into the requested language and convert quantities into the requested measurement system, preserving the recipe's proportions, instruction order, and source URL. Flag uncertain conversions instead of guessing.
 4. Report inaccessible pages or ambiguous information instead of inventing missing details.
 5. Check existing recipes for the same source URL and avoid accidental duplicates.
-6. Create or update the Markdown file, using a stable, unique slug, categories/tags, and one local recipe photo with alt text. Only use photos the user is permitted to publish and preserve applicable attribution.
+6. Create or update the Markdown file with a stable, unique filename, cuisine categories, other tags, and one local recipe photo with alt text. Record the recipe's actual language and measurement system. Set `addedAt` on first import and preserve it on updates, along with personal notes.
 7. Run content validation and the production build.
 8. Prepare the change for the repository's publishing workflow. Remote publication requires authorization; under the current CLI safety restriction, leave changes local and report the remaining user-operated publishing step.
 9. After publication, verify the recipe URL and report the result. If a merge or deployment is still pending, report that status instead.
@@ -305,10 +352,12 @@ No custom MCP server is required for this architecture. The agent works with rep
 - [x] Configure Cloudflare static-assets-only hosting locally.
 - [x] Establish personal settings, style overrides, and separate personal/example content locations.
 - [x] Document independent repositories with shared Git history and opt-in upstream merges.
-- [ ] Define the recipe content schema and sample content.
-- [ ] Build the collection, recipe, search, and print views.
+- [x] Define the recipe content schema and sample content.
+- [x] Build individual recipe pages, homepage recipe links, and print styles.
+- [ ] Build the full collection grid, search, and filter views.
 - [x] Add initial name, description, and tagline settings with shared defaults.
-- [ ] Add validation and build checks.
+- [x] Add recipe language and measurement preferences with English and metric shared defaults.
+- [x] Add local validation, schema tests, and build checks.
 - [ ] Add GitHub Actions validation and production deployment workflows.
 - [ ] Verify the first live Cloudflare deployment through the approved publishing workflow.
 - [ ] Write the setup and recipe-import agent instructions and skill.

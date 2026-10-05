@@ -1,0 +1,179 @@
+---
+import Layout from '@/layouts/Layout.astro';
+import { Image } from 'astro:assets';
+import { getCollection, render, type CollectionEntry } from 'astro:content';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { foodbook } from '@/lib/foodbook';
+
+export async function getStaticPaths() {
+  const recipes = await getCollection('recipes');
+  return recipes.map((recipe) => ({
+    params: { id: recipe.id },
+    props: { recipe },
+  }));
+}
+
+interface Props {
+  recipe: CollectionEntry<'recipes'>;
+}
+
+const { recipe } = Astro.props;
+const { data } = recipe;
+const { Content } = await render(recipe);
+const number = new Intl.NumberFormat(data.language, {
+  maximumFractionDigits: 20,
+});
+const addedDate = new Intl.DateTimeFormat(data.language, {
+  dateStyle: 'long',
+  timeZone: 'UTC',
+}).format(new Date(data.addedAt));
+const facts = [
+  {
+    label: 'Servings',
+    value:
+      data.servings === undefined ? undefined : number.format(data.servings),
+  },
+  {
+    label: 'Prep time',
+    value:
+      data.prepMinutes === undefined
+        ? undefined
+        : `${number.format(data.prepMinutes)} min`,
+  },
+  {
+    label: 'Cook time',
+    value:
+      data.cookMinutes === undefined
+        ? undefined
+        : `${number.format(data.cookMinutes)} min`,
+  },
+].filter(({ value }) => value !== undefined);
+---
+
+<Layout
+  title={`${data.title} | ${foodbook.name}`}
+  description={`${data.title} — ingredients and cooking instructions from ${foodbook.name}.`}
+  language={data.language}
+>
+  <main class="recipe-page mx-auto flex max-w-4xl flex-col gap-10 px-6 py-10 sm:py-16">
+    <nav
+      aria-label="Cookbook navigation"
+      lang="en"
+      class="flex items-center justify-between gap-4 print:hidden"
+    >
+      <a
+        href="/"
+        class="text-sm text-muted-foreground underline-offset-4 hover:underline focus-visible:outline-2 focus-visible:outline-offset-4"
+      >
+        Back to {foodbook.name}
+      </a>
+      <Button type="button" variant="outline" data-print-recipe>
+        Print recipe
+      </Button>
+    </nav>
+
+    <article class="flex min-w-0 flex-col gap-8">
+      <header class="flex flex-col gap-5">
+        {(data.categories.length > 0 || data.tags.length > 0) && (
+          <div
+            class="flex flex-wrap gap-2"
+            aria-label="Recipe categories and tags"
+            lang="en"
+          >
+            {data.categories.map((category) => (
+              <Badge variant="secondary">{category.replaceAll('-', ' ')}</Badge>
+            ))}
+            {data.tags.map((tag) => (
+              <Badge variant="outline">{tag.replaceAll('-', ' ')}</Badge>
+            ))}
+          </div>
+        )}
+        <h1 class="text-3xl font-semibold tracking-tight text-balance sm:text-4xl">
+          {data.title}
+        </h1>
+        {facts.length > 0 && (
+          <dl class="flex flex-wrap gap-x-10 gap-y-4" lang="en">
+            {facts.map(({ label, value }) => (
+              <div class="flex flex-col gap-1">
+                <dt class="text-sm text-muted-foreground">{label}</dt>
+                <dd class="font-medium">{value}</dd>
+              </div>
+            ))}
+          </dl>
+        )}
+      </header>
+
+      <Image
+        src={data.image}
+        alt={data.imageAlt}
+        layout="full-width"
+        class="recipe-photo h-auto w-full rounded-xl"
+        loading="eager"
+      />
+
+      <div class="recipe-body grid min-w-0 gap-10 md:grid-cols-[minmax(0,1fr)_minmax(0,1.6fr)] md:gap-12">
+        <section
+          aria-labelledby="ingredients-heading"
+          class="flex min-w-0 flex-col gap-6"
+        >
+          <h2
+            id="ingredients-heading"
+            lang="en"
+            class="text-2xl font-semibold tracking-tight"
+          >
+            Ingredients
+          </h2>
+          <ul class="recipe-ingredients flex flex-col gap-5">
+            {data.ingredients.map(({ name, quantity, unit, notes }) => (
+              <li class="flex flex-col gap-1">
+                <div class="flex items-baseline justify-between gap-4">
+                  <span class="font-medium">{name}</span>
+                  {quantity !== undefined && (
+                    <span class="text-right text-sm text-muted-foreground">
+                      {typeof quantity === 'number'
+                        ? number.format(quantity)
+                        : quantity}
+                      {unit && ` ${unit}`}
+                    </span>
+                  )}
+                </div>
+                {notes && <p class="text-sm text-muted-foreground">{notes}</p>}
+              </li>
+            ))}
+          </ul>
+        </section>
+
+        <div class="recipe-content min-w-0">
+          <Content />
+        </div>
+      </div>
+
+      <footer
+        class="flex flex-col items-start gap-3 text-sm text-muted-foreground"
+        lang="en"
+      >
+        <a
+          href={data.sourceUrl}
+          class="underline underline-offset-4 focus-visible:outline-2 focus-visible:outline-offset-4"
+        >
+          Original recipe
+        </a>
+        <p class="hidden break-all print:block">{data.sourceUrl}</p>
+        <p>
+          Added <time datetime={data.addedAt}>{addedDate}</time> ·{' '}
+          {data.measurementSystem === 'metric' ? 'Metric' : 'US customary'}{' '}
+          measurements
+        </p>
+      </footer>
+    </article>
+  </main>
+</Layout>
+
+<script>
+  document
+    .querySelector('[data-print-recipe]')
+    ?.addEventListener('click', () => {
+      window.print();
+    });
+</script>

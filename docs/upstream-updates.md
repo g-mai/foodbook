@@ -51,6 +51,7 @@ This currently targets the upstream development branch. Once versioned releases 
 ### Resolve and verify
 
 - Git normally retains recipes and other files added only in your personal repository.
+- To keep all bundled starters out of your cookbook across updates, set `includeDefaultRecipes: false` in your personal `foodbook.config.ts`. New starter files can still arrive through an upstream merge, but they will not appear on your website. Personal recipes continue to load.
 - Changes to the same components, configuration, or skills may conflict. Reconcile both sets of changes instead of accepting all of one side.
 - Schema or behavior changes can require migration even when Git reports no conflicts. Review upgrade notes and preview your custom features.
 - If a dependency update conflicts, resolve `package.json` intentionally and use pnpm to reconcile/regenerate `pnpm-lock.yaml`; do not hand-edit the lockfile.

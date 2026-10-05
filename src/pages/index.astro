@@ -2,6 +2,11 @@
 import Layout from '@/layouts/Layout.astro';
 import { SetupStatus } from '@/components/setup-status';
 import { foodbook } from '@/lib/foodbook';
+import { getCollection } from 'astro:content';
+
+const recipes = (await getCollection('recipes')).sort(
+  (a, b) => Date.parse(b.data.addedAt) - Date.parse(a.data.addedAt),
+);
 ---
 
 <Layout>
@@ -10,6 +15,26 @@ import { foodbook } from '@/lib/foodbook';
       <h1 class="text-4xl font-semibold tracking-tight">{foodbook.name}</h1>
       <p class="text-lg text-muted-foreground">{foodbook.tagline}</p>
     </header>
+    {recipes.length > 0 && (
+      <section aria-labelledby="recipes-heading" class="flex flex-col gap-4">
+        <h2 id="recipes-heading" class="text-2xl font-semibold">
+          Recipes
+        </h2>
+        <ul class="flex flex-col gap-3">
+          {recipes.map((recipe) => (
+            <li>
+              <a
+                href={`/recipes/${recipe.id}/`}
+                lang={recipe.data.language}
+                class="font-medium underline underline-offset-4 focus-visible:outline-2 focus-visible:outline-offset-4"
+              >
+                {recipe.data.title}
+              </a>
+            </li>
+          ))}
+        </ul>
+      </section>
+    )}
     <SetupStatus />
   </main>
 </Layout>
