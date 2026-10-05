@@ -7,6 +7,8 @@ Shared starter recipes and their images belong here, separate from personal cook
 `default-recipes/` is loaded into the recipe collection by default, alongside personal recipes in `src/content/recipes/`. These are real recipes included with a new Foodbook checkout, saved in English with metric measurements. Changing language or measurement preferences does not rewrite them.
 
 - `default-recipes/pollo-alla-cacciatora.md`: chicken cacciatore, categorized as `italian`, with a local photo in `images/pollo-alla-cacciatora.jpg`.
+- `default-recipes/pasta-with-broccoli-and-anchovies.md`: linguine with Sicilian broccoli and anchovies, based on [Agrodolce's recipe](https://www.agrodolce.it/ricette/pasta-con-broccoli-e-acciughe). Add a local photo and its alt text before building; the recipe schema requires both image fields.
+- `default-recipes/modanyaki.md`: Japanese cabbage pancake layered with yakisoba and pork belly, based on [Japanese Cooking 101's recipe](https://japanesecooking101.com/modanyaki-recipe/), with its local source photo.
 
 To exclude all starter recipes, set `includeDefaultRecipes: false` in your personal `foodbook.config.ts`. Personal recipes still load. Starter files and images remain in the repository, but do not produce recipe pages or homepage links. New starters received through upstream updates remain excluded too.
 

@@ -1,40 +1,62 @@
 ---
 import Layout from '@/layouts/Layout.astro';
-import { SetupStatus } from '@/components/setup-status';
+import { RecipeBrowser } from '@/components/recipe-browser';
 import { foodbook } from '@/lib/foodbook';
+import { getImage } from 'astro:assets';
 import { getCollection } from 'astro:content';
 
-const recipes = (await getCollection('recipes')).sort(
-  (a, b) => Date.parse(b.data.addedAt) - Date.parse(a.data.addedAt),
+const recipes = await getCollection('recipes');
+const browserRecipes = await Promise.all(
+  recipes.map(async (recipe) => {
+    const image = await getImage({
+      src: recipe.data.image,
+      width: 720,
+      height: 540,
+      format: 'webp',
+    });
+
+    return {
+      id: recipe.id,
+      title: recipe.data.title,
+      addedAt: recipe.data.addedAt,
+      language: recipe.data.language,
+      categories: recipe.data.categories,
+      tags: recipe.data.tags,
+      ingredients: recipe.data.ingredients.map(({ name }) => name),
+      prepMinutes: recipe.data.prepMinutes ?? null,
+      cookMinutes: recipe.data.cookMinutes ?? null,
+      servings: recipe.data.servings ?? null,
+      image: {
+        src: image.src,
+        width: 720,
+        height: 540,
+        alt: recipe.data.imageAlt,
+      },
+    };
+  }),
 );
 ---
 
-<Layout>
-  <main class="mx-auto flex max-w-2xl flex-col gap-8 px-6 py-16 sm:py-24">
-    <header class="flex flex-col gap-3">
-      <h1 class="text-4xl font-semibold tracking-tight">{foodbook.name}</h1>
-      <p class="text-lg text-muted-foreground">{foodbook.tagline}</p>
+<Layout title={foodbook.name} description={foodbook.description}>
+  <main class="mx-auto flex max-w-6xl flex-col gap-10 px-5 py-10 sm:px-8 sm:py-16">
+    <header class="flex flex-col gap-2">
+      <a
+        href="/"
+        class="w-fit rounded-sm focus-visible:outline-2 focus-visible:outline-offset-4"
+      >
+        <h1 class="text-3xl font-semibold tracking-tight sm:text-4xl">
+          {foodbook.name}
+        </h1>
+      </a>
+      <p class="text-base text-muted-foreground sm:text-lg">
+        {foodbook.tagline}
+      </p>
     </header>
-    {recipes.length > 0 && (
-      <section aria-labelledby="recipes-heading" class="flex flex-col gap-4">
-        <h2 id="recipes-heading" class="text-2xl font-semibold">
-          Recipes
-        </h2>
-        <ul class="flex flex-col gap-3">
-          {recipes.map((recipe) => (
-            <li>
-              <a
-                href={`/recipes/${recipe.id}/`}
-                lang={recipe.data.language}
-                class="font-medium underline underline-offset-4 focus-visible:outline-2 focus-visible:outline-offset-4"
-              >
-                {recipe.data.title}
-              </a>
-            </li>
-          ))}
-        </ul>
-      </section>
-    )}
-    <SetupStatus />
+    <RecipeBrowser recipes={browserRecipes} client:load />
+    <noscript>
+      <p class="text-sm text-muted-foreground">
+        Search and filters need JavaScript. All recipes are listed below.
+      </p>
+    </noscript>
   </main>
 </Layout>
