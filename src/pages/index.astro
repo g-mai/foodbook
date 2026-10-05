@@ -1,17 +1,16 @@
 ---
-
+import Layout from '@/layouts/Layout.astro';
+import { SetupStatus } from '@/components/setup-status';
 ---
 
-<html lang="en">
-	<head>
-		<meta charset="utf-8" />
-		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-		<link rel="icon" href="/favicon.ico" />
-		<meta name="viewport" content="width=device-width" />
-		<meta name="generator" content={Astro.generator} />
-		<title>Astro</title>
-	</head>
-	<body>
-		<h1>Astro</h1>
-	</body>
-</html>
+<Layout>
+  <main class="mx-auto flex max-w-2xl flex-col gap-8 px-6 py-16 sm:py-24">
+    <header class="flex flex-col gap-3">
+      <h1 class="text-4xl font-semibold tracking-tight">Foodbook</h1>
+      <p class="text-lg text-muted-foreground">
+        Your recipes, in a collection you own.
+      </p>
+    </header>
+    <SetupStatus />
+  </main>
+</Layout>
