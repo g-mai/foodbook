@@ -1,15 +1,14 @@
 ---
 import Layout from '@/layouts/Layout.astro';
 import { SetupStatus } from '@/components/setup-status';
+import { foodbook } from '@/lib/foodbook';
 ---
 
 <Layout>
   <main class="mx-auto flex max-w-2xl flex-col gap-8 px-6 py-16 sm:py-24">
     <header class="flex flex-col gap-3">
-      <h1 class="text-4xl font-semibold tracking-tight">Foodbook</h1>
-      <p class="text-lg text-muted-foreground">
-        Your recipes, in a collection you own.
-      </p>
+      <h1 class="text-4xl font-semibold tracking-tight">{foodbook.name}</h1>
+      <p class="text-lg text-muted-foreground">{foodbook.tagline}</p>
     </header>
     <SetupStatus />
   </main>

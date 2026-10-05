@@ -4,7 +4,7 @@ A personal recipe website you can create and maintain with an AI agent.
 
 Save recipes from around the web, keep them in a collection you own, and read them in a clean, mobile-friendly format. Recipes live in your GitHub repository as Markdown files. Astro turns them into a static website, and the planned GitHub Actions workflow will build and deploy production-branch changes to Cloudflare.
 
-**Status:** Foundation implemented. The Astro application uses static output, Tailwind CSS, React, and shadcn/ui, with a static-assets-only Wrangler configuration. Recipe content, the cookbook UI, GitHub Actions workflows, and the import skill are still to be implemented. The current homepage is a setup placeholder, not the finished cookbook.
+**Status:** Foundation implemented. The Astro application uses static output, Tailwind CSS, React, and shadcn/ui, with a static-assets-only Wrangler configuration. Personal site settings and a stylesheet override entry point are connected to the placeholder homepage. Personal content directories and a shared-history update guide are in place. Recipe schemas/rendering, the cookbook UI, GitHub Actions workflows, and the import skill are still to be implemented.
 
 ## The idea
 
@@ -16,7 +16,72 @@ After a guided, one-time setup, updating your cookbook should be as simple as as
 
 The agent imports the recipe, validates the content, and updates GitHub. Once the change reaches the production branch, Cloudflare publishes the updated website.
 
-Each person owns their repository and hosting account. Foodbook is a starter for independent personal websites, rather than a shared hosted service.
+Each person owns their repository and hosting account. Foodbook is a starter for independent personal websites, rather than a shared hosted service. Personal repositories preserve the original Git history so they can merge future Foodbook updates while retaining their own recipes, styling, and custom features.
+
+## Your cookbook and the shared project
+
+Keep the public Foodbook project separate from your personal cookbook, even if you maintain Foodbook itself:
+
+```text
+Public foodbook                  Personal my-foodbook (private or public)
+Application, skills, examples -> Complete editable application + personal content
+                          upstream updates via Git merges
+```
+
+In a personal checkout, `origin` points to the user's own repository and `upstream` points to the public Foodbook repository. The public development checkout can keep its normal `origin`; the two-remote arrangement is for personal copies.
+
+**Clone with history, rather than using “Use this template.”** Publish the clone to an independent empty repository to keep the shared ancestry while allowing private source. A GitHub fork of a public project must be public, whereas an independent repository can be private.
+
+Users can edit any application file. Dedicated settings and content directories make routine customization less likely to conflict with shared updates. Updates are opt-in merges on an update branch, not file replacements or automatic resets to upstream. Changes to the same code may need conflict resolution, and content-schema changes may need migration.
+
+See [Personal repositories and upstream updates](docs/upstream-updates.md) for initial setup, merge commands, validation, and how to contribute shared improvements back without publishing personal content.
+
+### File structure and customization
+
+```text
+foodbook.config.ts             Personal site-setting overrides
+src/
+  content/recipes/             Personal Markdown recipes (currently empty)
+  assets/recipes/              Personal recipe photos (currently empty)
+  styles/
+    custom.css                 Personal style overrides
+    global.css                 Shared theme and base styles
+  lib/
+    foodbook-defaults.ts        Shared settings type and default values
+    foodbook.ts                 Resolves defaults + personal overrides
+  components/                  Editable shared UI components
+  layouts/                     Editable shared layouts
+  pages/                       Editable shared pages
+examples/                      Shared demonstration content, outside the site
+docs/upstream-updates.md        Setup and update workflow
+wrangler.jsonc                 Your deployment's Worker name and asset settings
+```
+
+Personal content directories contain only `.gitkeep` placeholders in the public project. Recipes, photos, and personal overrides should be committed in the personal repository, not ignored: GitHub Actions and cloud agents need them. Shared examples belong in `examples/` and are not automatically added to the cookbook. The content schema and recipe pages are not implemented yet, so adding a recipe file alone does not currently render it.
+
+To personalize the current homepage and default page metadata, edit `foodbook.config.ts`:
+
+```ts
+import type { FoodbookConfig } from './src/lib/foodbook-defaults';
+
+export default {
+  name: "Sofia's Kitchen",
+  description: 'Recipes I love to cook and share.',
+  tagline: 'Everyday meals and weekend experiments.',
+} satisfies Partial<FoodbookConfig>;
+```
+
+Omitted settings inherit shared defaults. Upstream development should add or change defaults in `src/lib/foodbook-defaults.ts` instead of routinely modifying the personal override file.
+
+`src/styles/custom.css` loads after the shared stylesheet. Use it for personal selectors or theme-token overrides, for example:
+
+```css
+:root {
+  --primary: oklch(0.45 0.1 150);
+}
+```
+
+Shared theme improvements belong in `global.css`. You can still change components and layouts directly when customization needs more than settings and styles.
 
 ## Goals
 
@@ -78,7 +143,7 @@ The repository is the source of truth. Changes become visible on the website aft
 - Individual recipe pages with ingredients, instructions, servings, and preparation/cooking times when available.
 - Original source links and attribution.
 - Mobile-friendly reading and print styles.
-- Simple personalization: cookbook name, owner, description, and colors.
+- Extend the existing site settings and stylesheet overrides as the cookbook UI grows.
 - An agent skill for importing recipes from URLs.
 - Content validation and a reproducible static build.
 - GitHub Actions checks on pull requests and static deployments on pushes to `main`.
@@ -91,11 +156,12 @@ Serving-size adjustments, ingredient checkboxes, and other cooking helpers can f
 The intended onboarding flow is:
 
 1. **Create GitHub and Cloudflare accounts.** Free accounts should be sufficient for the intended static personal website, subject to their current limits.
-2. **Create your own repository from the Foodbook starter.** A private repository can be used with Cloudflare hosting.
-3. **Give your coding agent access to the repository.** The agent personalizes the site and prepares its configuration.
+2. **Clone Foodbook with its Git history and publish it to your own empty repository.** Configure `origin` for the personal repository and `upstream` for public Foodbook, following the [setup guide](docs/upstream-updates.md#create-a-personal-cookbook). Private source is supported; do not use GitHub's template-generation flow for this update model.
+3. **Give your coding agent access to the personal repository.** The agent personalizes `foodbook.config.ts`, optional styles in `src/styles/custom.css`, and your Worker name in `wrangler.jsonc`.
 4. **Configure GitHub Actions deployment.** Keep workflows in `.github/workflows/` and hosting settings in `wrangler.jsonc`. An account-scoped Cloudflare API token and account ID will be provided through GitHub Actions secrets; no Cloudflare Git integration or Workers Builds setup is needed.
 5. **Publish the first version.** Use the provided `workers.dev` address or optionally connect a domain you own.
 6. **Add recipes through your agent.** Push or merge approved changes to the production branch to publish them.
+7. **Update when you choose.** Ask the agent to prepare an upstream merge on a separate branch, preserving personal content and custom features. Validate the combined result before publication, and retain merge ancestry rather than squash-merging upstream updates.
 
 The project already includes local scripts and static Wrangler configuration. GitHub Actions workflows and complete publishing instructions will follow.
 
@@ -142,6 +208,7 @@ There is intentionally no live `deploy` script under the current safety restrict
 - `astro.config.mjs` enables React and the Tailwind v4 Vite plugin, with explicit static output.
 - `src/styles/global.css` holds Tailwind imports and shadcn theme tokens. The initial theme is neutral, with the Geist font bundled locally.
 - `src/layouts/Layout.astro` loads the global stylesheet and shared page metadata.
+- The layout also loads `src/styles/custom.css` after shared styles and reads default metadata from the resolved Foodbook settings. The homepage uses the configured name and tagline.
 - `components.json` configures shadcn/ui's Nova style with Radix primitives, TypeScript, and Lucide icons.
 - `src/components/ui/` contains the initial Button, Card, Badge, and Input components added from the official shadcn registry.
 - `@/*` imports resolve to `src/*`. Use `pnpm dlx shadcn@latest add @shadcn/<component>` to add further official components as needed.
@@ -152,7 +219,7 @@ Only components needing browser interactivity should use an Astro `client:*` dir
 
 The goal is for an agent to handle the technical work from a request such as:
 
-> Set up my personal cookbook using Foodbook. Call it “Sofia's Kitchen,” use free Cloudflare hosting with Git-triggered deployments, and import these recipe URLs: [...]. Guide me through any required account authorizations and return the live website URL.
+> Set up my personal cookbook using Foodbook, preserving its Git history in my own private repository with origin and upstream remotes. Call it “Sofia's Kitchen,” use free Cloudflare hosting with Git-triggered deployments, and import these recipe URLs: [...]. Guide me through any required account authorizations and return the live website URL.
 
 Account creation, login, and service authorization can still require user interaction. The agent must have the ability to edit files, run commands, and write to GitHub; an ordinary chat session without those tools cannot complete the workflow.
 
@@ -203,6 +270,8 @@ This example illustrates the proposed schema; the final schema will be defined a
 
 ## Agent import workflow
 
+Work in the personal cookbook repository, using its local content and configuration. The public project is for shared software and examples, not the maintainer's actual cookbook.
+
 The planned skill will instruct an agent to:
 
 1. Read the supplied URL and look for structured `Recipe` JSON-LD.
@@ -221,9 +290,10 @@ No custom MCP server is required for this architecture. The agent works with rep
 
 ## Ownership, visibility, and costs
 
-- **You own the source:** recipes, site configuration, and images live in your repository.
+- **You own the source:** application code, skills, recipes, site configuration, and images live in your independent repository. You can customize everything and merge selected upstream updates.
 - **The deployed website is public by default:** a private GitHub repository does not make the website private.
 - **Hosting is intended to stay on the free tier:** provider limits still apply, including build and asset limits.
+- **Private-repository CI has quotas:** GitHub Actions usage counts against your account's included private-repository allowance; free static hosting does not provide unlimited CI minutes.
 - **AI usage is separate:** the user's coding-agent subscription or usage charges are not covered by free hosting.
 - **A custom domain is optional:** the provider subdomain avoids a domain-registration cost.
 - **History is preserved:** Git provides a record of recipe changes and a way to restore earlier versions.
@@ -233,13 +303,16 @@ No custom MCP server is required for this architecture. The agent works with rep
 - [x] Scaffold the Astro application with TypeScript and static output.
 - [x] Set up Tailwind CSS, React, and shadcn/ui.
 - [x] Configure Cloudflare static-assets-only hosting locally.
+- [x] Establish personal settings, style overrides, and separate personal/example content locations.
+- [x] Document independent repositories with shared Git history and opt-in upstream merges.
 - [ ] Define the recipe content schema and sample content.
 - [ ] Build the collection, recipe, search, and print views.
-- [ ] Add personalization settings.
+- [x] Add initial name, description, and tagline settings with shared defaults.
 - [ ] Add validation and build checks.
 - [ ] Add GitHub Actions validation and production deployment workflows.
 - [ ] Verify the first live Cloudflare deployment through the approved publishing workflow.
 - [ ] Write the setup and recipe-import agent instructions and skill.
+- [ ] Publish versioned releases with upgrade notes and content migrations when needed.
 - [ ] Test the onboarding flow with a fresh repository and hosting project.
 - [ ] Verify the mobile-agent maintenance workflow.
 - [ ] Publish the reusable starter and complete the setup documentation.

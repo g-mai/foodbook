@@ -1,15 +1,15 @@
 ---
 import '@/styles/global.css';
+import '@/styles/custom.css';
+import { foodbook } from '@/lib/foodbook';
 
 interface Props {
   title?: string;
   description?: string;
 }
 
-const {
-  title = 'Foodbook',
-  description = 'A personal recipe collection you own and maintain with an AI agent.',
-} = Astro.props;
+const { title = foodbook.name, description = foodbook.description } =
+  Astro.props;
 ---
 
 <!doctype html>

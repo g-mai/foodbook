@@ -1,11 +1,12 @@
-## Remote service safety
-
-- Use `gh` and `wrangler` exclusively for read-only queries and dry-run actions.
-- Never push, deploy, write, or delete remote resources, including secrets, through these CLIs.
-- Authentication is not authorization to make remote changes. Keep implementation changes local.
-- Use `pnpm run deploy:dry-run` to verify deployment without publishing.
-
 ## Development
+
+### Shared project and personal cookbooks
+
+- Personal cookbooks are independent repositories preserving Foodbook's Git history: `origin` is the personal repository and `upstream` is the public Foodbook repository. Check the repository context before preparing changes; the public development checkout may only have `origin`.
+- Keep personal overrides in `foodbook.config.ts` and `src/styles/custom.css`. Add shared defaults in `src/lib/foodbook-defaults.ts` and shared styles in `src/styles/global.css` instead of routinely editing the personal override files upstream.
+- Personal recipes and photos belong in `src/content/recipes/` and `src/assets/recipes/`, tracked in the personal repository. Keep these directories empty in the public project except for `.gitkeep`; shared examples belong in `examples/`.
+- All application code remains customizable. Upstream updates use normal Git merges on a dedicated branch, preserving personal content and custom features. Follow `docs/upstream-updates.md`; do not replace a cookbook with a fresh upstream copy or squash away upstream merge ancestry.
+- These conventions do not change the remote-service safety restrictions above.
 
 When starting the dev server, use background mode:
 
