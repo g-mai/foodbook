@@ -13,7 +13,7 @@ tags:
   - main-course
   - chicken
   - stovetop
-image: ../images/pollo-alla-cacciatora.jpg
+image: ./images/pollo-alla-cacciatora.jpg
 imageAlt: Chicken pieces in tomato sauce with black olives
 ingredients:
   - name: chicken thighs

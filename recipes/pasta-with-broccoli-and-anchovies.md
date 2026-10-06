@@ -12,7 +12,7 @@ categories:
 tags:
   - main-course
   - pasta
-image: ../images/pasta-with-broccoli-and-anchovies.webp
+image: ./images/pasta-with-broccoli-and-anchovies.webp
 imageAlt: Pasta with Broccoli and Anchovies
 ingredients:
   - name: linguine

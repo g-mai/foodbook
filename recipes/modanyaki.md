@@ -11,7 +11,7 @@ tags:
   - main-course
   - pork
   - noodles
-image: ../images/modanyaki.jpg
+image: ./images/modanyaki.jpg
 imageAlt: Modanyaki topped with sauce, mayonnaise, bonito flakes, and aonori
 ingredients:
   - name: all-purpose flour
