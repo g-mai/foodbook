@@ -38,25 +38,66 @@ const browserRecipes = await Promise.all(
 ---
 
 <Layout title={foodbook.name} description={foodbook.description}>
-  <main class="mx-auto flex max-w-6xl flex-col gap-10 px-5 py-10 sm:px-8 sm:py-16">
-    <header class="flex flex-col gap-2">
+  <main id="top" class="cookbook-shell">
+    <header class="cookbook-header">
       <a
         href="/"
-        class="w-fit rounded-sm focus-visible:outline-2 focus-visible:outline-offset-4"
+        class="wordmark w-fit rounded-sm focus-visible:outline-2 focus-visible:outline-offset-4"
       >
-        <h1 class="text-3xl font-semibold tracking-tight sm:text-4xl">
-          {foodbook.name}
-        </h1>
+        <svg
+          aria-hidden="true"
+          class="wordmark-icon"
+          width="26"
+          height="26"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="1.6"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        >
+          <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20M6.5 3H20v19H6.5A2.5 2.5 0 0 1 4 19.5v-14A2.5 2.5 0 0 1 6.5 3Z" />
+          <path d="M9 7h6M9 11h4" />
+        </svg>
+        <span>{foodbook.name}</span>
       </a>
-      <p class="text-base text-muted-foreground sm:text-lg">
-        {foodbook.tagline}
-      </p>
     </header>
-    <RecipeBrowser recipes={browserRecipes} client:load />
+
+    <RecipeBrowser
+      recipes={browserRecipes}
+      tagline={foodbook.tagline}
+      client:load
+    />
     <noscript>
+      <style is:inline>
+        .suggestion-shuffle {
+          display: none;
+        }
+        .suggestion-print[data-pending='true'] {
+          visibility: visible;
+        }
+      </style>
       <p class="text-sm text-muted-foreground">
         Search and filters need JavaScript. All recipes are listed below.
       </p>
     </noscript>
+    <footer class="cookbook-footer">
+      <span>{foodbook.name}</span>
+      <span class="handwritten">Keep something delicious.</span>
+      <a href="#top">
+        Back to top
+        <svg
+          aria-hidden="true"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="1.6"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        >
+          <path d="M12 19V5m-6 6 6-6 6 6" />
+        </svg>
+      </a>
+    </footer>
   </main>
 </Layout>

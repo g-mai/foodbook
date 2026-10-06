@@ -56,7 +56,7 @@ const facts = [
   description={`${data.title} — ingredients and cooking instructions from ${foodbook.name}.`}
   language={data.language}
 >
-  <main class="recipe-page mx-auto flex max-w-4xl flex-col gap-10 px-6 py-10 sm:py-16">
+  <main class="recipe-page mx-auto flex max-w-6xl flex-col gap-10 px-5 py-8 sm:gap-12 sm:px-8 sm:py-12">
     <nav
       aria-label="Cookbook navigation"
       lang="en"
@@ -64,16 +64,16 @@ const facts = [
     >
       <a
         href="/"
-        class="text-sm text-muted-foreground underline-offset-4 hover:underline focus-visible:outline-2 focus-visible:outline-offset-4"
+        class="recipe-back text-sm font-medium underline-offset-4 hover:underline focus-visible:outline-2 focus-visible:outline-offset-4"
       >
-        Back to {foodbook.name}
+        <span aria-hidden="true">←</span> Back to {foodbook.name}
       </a>
       <Button type="button" variant="outline" data-print-recipe>
         Print recipe
       </Button>
     </nav>
 
-    <article class="flex min-w-0 flex-col gap-8">
+    <article class="flex min-w-0 flex-col gap-9">
       <header class="flex flex-col gap-5">
         {(data.categories.length > 0 || data.tags.length > 0) && (
           <div
@@ -89,15 +89,15 @@ const facts = [
             ))}
           </div>
         )}
-        <h1 class="text-3xl font-semibold tracking-tight text-balance sm:text-4xl">
+        <h1 class="recipe-title font-heading text-4xl font-semibold tracking-tight sm:text-6xl">
           {data.title}
         </h1>
         {facts.length > 0 && (
-          <dl class="flex flex-wrap gap-x-10 gap-y-4" lang="en">
+          <dl class="recipe-facts flex flex-wrap gap-x-10 gap-y-4" lang="en">
             {facts.map(({ label, value }) => (
               <div class="flex flex-col gap-1">
                 <dt class="text-sm text-muted-foreground">{label}</dt>
-                <dd class="font-medium">{value}</dd>
+                <dd class="font-heading text-xl font-semibold">{value}</dd>
               </div>
             ))}
           </dl>
@@ -108,25 +108,25 @@ const facts = [
         src={data.image}
         alt={data.imageAlt}
         layout="full-width"
-        class="recipe-photo h-auto w-full rounded-xl"
+        class="recipe-photo h-auto w-full rounded-3xl"
         loading="eager"
       />
 
-      <div class="recipe-body grid min-w-0 gap-10 md:grid-cols-[minmax(0,1fr)_minmax(0,1.6fr)] md:gap-12">
+      <div class="recipe-body grid min-w-0 items-start gap-8 md:grid-cols-[minmax(0,0.9fr)_minmax(0,1.4fr)] md:gap-12">
         <section
           aria-labelledby="ingredients-heading"
-          class="flex min-w-0 flex-col gap-6"
+          class="ingredients-card flex min-w-0 flex-col gap-6"
         >
           <h2
             id="ingredients-heading"
             lang="en"
-            class="text-2xl font-semibold tracking-tight"
+            class="font-heading text-3xl font-semibold tracking-tight"
           >
             Ingredients
           </h2>
-          <ul class="recipe-ingredients flex flex-col gap-5">
+          <ul class="recipe-ingredients flex flex-col gap-4">
             {data.ingredients.map(({ name, quantity, unit, notes }) => (
-              <li class="flex flex-col gap-1">
+              <li class="flex flex-col gap-1 border-b border-border/70 pb-4 last:border-0 last:pb-0">
                 <div class="flex items-baseline justify-between gap-4">
                   <span class="font-medium">{name}</span>
                   {quantity !== undefined && (
@@ -150,7 +150,7 @@ const facts = [
       </div>
 
       <footer
-        class="flex flex-col items-start gap-3 text-sm text-muted-foreground"
+        class="flex justify-between items-start gap-3 border-t border-border pt-6 text-sm text-muted-foreground"
         lang="en"
       >
         <a
@@ -161,9 +161,7 @@ const facts = [
         </a>
         <p class="hidden break-all print:block">{data.sourceUrl}</p>
         <p>
-          Added <time datetime={data.addedAt}>{addedDate}</time> ·{' '}
-          {data.measurementSystem === 'metric' ? 'Metric' : 'US customary'}{' '}
-          measurements
+          Added <time datetime={data.addedAt}>{addedDate}</time>
         </p>
       </footer>
     </article>

@@ -19,6 +19,16 @@ export interface BrowserRecipe {
 
 export type RecipeSort = 'newest' | 'oldest' | 'title-asc' | 'title-desc';
 
+export function getRandomRecipeIndex(
+  count: number,
+  previousIndex?: number,
+  random = Math.random(),
+) {
+  if (count <= 1) return 0;
+  if (previousIndex === undefined) return Math.floor(random * count);
+  return (previousIndex + 1 + Math.floor(random * (count - 1))) % count;
+}
+
 export function normalizeSearchText(value: string) {
   return value
     .normalize('NFD')

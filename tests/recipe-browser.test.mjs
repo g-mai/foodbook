@@ -4,8 +4,37 @@ import {
   filterAndSortRecipes,
   formatRecipeLabel,
   getRecipeCategories,
+  getRandomRecipeIndex,
   normalizeSearchText,
 } from '../src/lib/recipe-browser.ts';
+
+test('random suggestions can start on any recipe and never immediately repeat', () => {
+  assert.equal(getRandomRecipeIndex(0), 0);
+  assert.equal(getRandomRecipeIndex(1, 0), 0);
+
+  for (const count of [2, 3, 25]) {
+    const samples = Array.from({ length: count }, (_, i) => (i + 0.5) / count);
+    assert.deepEqual(
+      samples.map((sample) => getRandomRecipeIndex(count, undefined, sample)),
+      Array.from({ length: count }, (_, i) => i),
+    );
+
+    for (let previous = 0; previous < count; previous++) {
+      const picks = Array.from({ length: count - 1 }, (_, i) =>
+        getRandomRecipeIndex(count, previous, (i + 0.5) / (count - 1)),
+      );
+      assert.equal(new Set(picks).size, count - 1);
+      assert.ok(
+        picks.every((pick) => pick !== previous && pick >= 0 && pick < count),
+      );
+      assert.notEqual(getRandomRecipeIndex(count, previous, 0), previous);
+      assert.notEqual(
+        getRandomRecipeIndex(count, previous, 0.999999),
+        previous,
+      );
+    }
+  }
+});
 
 const recipes = [
   {

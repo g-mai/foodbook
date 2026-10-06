@@ -1,4 +1,4 @@
-import { Badge } from '@/components/ui/badge';
+import { ArrowUpRight, Clock3, UsersRound } from 'lucide-react';
 import { formatRecipeLabel, type BrowserRecipe } from '@/lib/recipe-browser';
 
 interface RecipeCardProps {
@@ -17,7 +17,7 @@ export function RecipeCard({ recipe, priority = false }: RecipeCardProps) {
       <a
         href={`/recipes/${recipe.id}/`}
         lang={recipe.language}
-        className="group flex h-full flex-col overflow-hidden rounded-xl bg-card text-card-foreground ring-1 ring-foreground/10 transition-shadow hover:shadow-md focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-ring"
+        className="recipe-card group"
       >
         <img
           src={recipe.image.src}
@@ -27,32 +27,35 @@ export function RecipeCard({ recipe, priority = false }: RecipeCardProps) {
           loading={priority ? 'eager' : 'lazy'}
           fetchPriority={priority ? 'high' : 'auto'}
           decoding="async"
-          className="aspect-4/3 w-full object-cover"
+          className="recipe-card-photo"
         />
-        <div className="flex h-full flex-col gap-3 p-4 sm:p-5">
-          <h3 className="text-lg leading-snug font-semibold text-balance group-hover:underline group-hover:underline-offset-4">
-            {recipe.title}
-          </h3>
+        <div className="recipe-card-caption">
           {recipe.categories.length > 0 && (
-            <div className="flex flex-wrap gap-2" aria-label="Categories">
-              {recipe.categories.map((category) => (
-                <Badge key={category} variant="secondary">
-                  {formatRecipeLabel(category)}
-                </Badge>
-              ))}
-            </div>
+            <p className="recipe-card-category">
+              {recipe.categories.map(formatRecipeLabel).join(' · ')}
+            </p>
           )}
+          <div className="recipe-card-title-row">
+            <h3>{recipe.title}</h3>
+            <ArrowUpRight aria-hidden="true" className="recipe-card-arrow" />
+          </div>
           {(totalMinutes !== null ||
             recipe.prepMinutes !== null ||
             recipe.cookMinutes !== null ||
             recipe.servings !== null) && (
-            <p className="mt-auto flex flex-wrap gap-x-3 gap-y-1 pt-1 text-sm text-muted-foreground">
+            <p className="recipe-card-facts">
               {totalMinutes !== null ? (
-                <span>{totalMinutes} min</span>
+                <span className="inline-flex items-center gap-1.5">
+                  <Clock3 aria-hidden="true" className="size-4" />
+                  {totalMinutes} min
+                </span>
               ) : (
                 <>
                   {recipe.prepMinutes !== null && (
-                    <span>Prep {recipe.prepMinutes} min</span>
+                    <span className="inline-flex items-center gap-1.5">
+                      <Clock3 aria-hidden="true" className="size-4" />
+                      Prep {recipe.prepMinutes} min
+                    </span>
                   )}
                   {recipe.cookMinutes !== null && (
                     <span>Cook {recipe.cookMinutes} min</span>
@@ -60,7 +63,10 @@ export function RecipeCard({ recipe, priority = false }: RecipeCardProps) {
                 </>
               )}
               {recipe.servings !== null && (
-                <span>{recipe.servings} servings</span>
+                <span className="inline-flex items-center gap-1.5">
+                  <UsersRound aria-hidden="true" className="size-4" />
+                  {recipe.servings} servings
+                </span>
               )}
             </p>
           )}

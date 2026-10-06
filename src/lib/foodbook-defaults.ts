@@ -17,7 +17,7 @@ export const foodbookDefaults: FoodbookConfig = {
   name: 'Foodbook',
   description:
     'A personal recipe collection you own and maintain with an AI agent.',
-  tagline: 'Your recipes, in a collection you own.',
+  tagline: 'The dishes you love, gathered in one happy place.',
   language: 'en',
   measurementSystem: 'metric',
   includeDefaultRecipes: true,

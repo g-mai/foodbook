@@ -1,4 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
+import { ArrowDown, Search } from 'lucide-react';
+import { RecipeSuggestion } from '@/components/recipe-suggestion';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { RecipeCard } from '@/components/recipe-card';
@@ -15,6 +17,7 @@ const PAGE_SIZE = 24;
 
 interface RecipeBrowserProps {
   recipes: BrowserRecipe[];
+  tagline: string;
 }
 
 function readLocation(categories: string[]) {
@@ -42,7 +45,7 @@ function writeLocation(next: {
   window.history.replaceState(null, '', nextUrl);
 }
 
-export function RecipeBrowser({ recipes }: RecipeBrowserProps) {
+export function RecipeBrowser({ recipes, tagline }: RecipeBrowserProps) {
   const categories = useMemo(() => getRecipeCategories(recipes), [recipes]);
   const [filters, setFilters] = useState({
     query: '',
@@ -121,50 +124,65 @@ export function RecipeBrowser({ recipes }: RecipeBrowserProps) {
     : `${filteredRecipes.length} ${filteredRecipes.length === 1 ? 'recipe' : 'recipes'}`;
 
   return (
-    <section aria-labelledby="recipes-heading" className="flex flex-col gap-6">
-      <h2 id="recipes-heading" className="sr-only">
-        Recipes
-      </h2>
-      <div className="flex flex-col gap-4">
-        <label htmlFor="recipe-search" className="sr-only">
-          Search recipes, ingredients, categories, and tags
-        </label>
-        <Input
-          ref={searchRef}
-          id="recipe-search"
-          type="search"
-          value={query}
-          onChange={(event) =>
-            updateFilters({ query: event.currentTarget.value })
-          }
-          placeholder="Search recipes or ingredients…"
-          className="h-12 rounded-xl px-4 text-base sm:text-sm"
-          autoComplete="off"
-        />
-        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-          <div className="flex flex-col gap-1.5">
-            <label htmlFor="recipe-category" className="text-sm font-medium">
-              Category
+    <div className="recipe-browser">
+      <section className="scrapbook-opening" aria-labelledby="cookbook-heading">
+        <div className="scrapbook-intro">
+          <h1 id="cookbook-heading" className="scrapbook-title">
+            What sounds
+            <br />
+            good today<span className="title-punctuation">?</span>
+          </h1>
+          <p className="scrapbook-tagline">{tagline}</p>
+          <div className="search-area">
+            <label htmlFor="recipe-search" className="search-label">
+              Search recipes
             </label>
-            <select
-              id="recipe-category"
-              value={category}
-              onChange={(event) =>
-                updateFilters({ category: event.currentTarget.value })
-              }
-              className="h-10 w-full rounded-lg border border-input bg-background px-3 text-sm focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
-            >
-              <option value="all">All categories</option>
-              {categories.map((item) => (
-                <option key={item} value={item}>
-                  {formatRecipeLabel(item)}
-                </option>
-              ))}
-            </select>
+            <div className="search-field">
+              <Search aria-hidden="true" className="search-icon" />
+              <Input
+                ref={searchRef}
+                id="recipe-search"
+                type="search"
+                value={query}
+                onChange={(event) =>
+                  updateFilters({ query: event.currentTarget.value })
+                }
+                placeholder="Dish or ingredient…"
+                className="recipe-search"
+                autoComplete="off"
+              />
+            </div>
+            {hasActiveFilters && (
+              <a href="#collection" className="search-results-link">
+                {filteredRecipes.length}{' '}
+                {filteredRecipes.length === 1 ? 'recipe' : 'recipes'} found
+                <ArrowDown aria-hidden="true" />
+              </a>
+            )}
           </div>
-          <div className="flex flex-col gap-1.5">
-            <label htmlFor="recipe-sort" className="text-sm font-medium">
-              Order by
+        </div>
+        {recipes.length > 0 && <RecipeSuggestion recipes={recipes} />}
+      </section>
+
+      <section
+        id="collection"
+        aria-labelledby="recipes-heading"
+        className="recipe-collection"
+      >
+        <div className="collection-heading">
+          <div>
+            <h2 id="recipes-heading">Recipes</h2>
+            <p
+              className="collection-count"
+              aria-live="polite"
+              aria-atomic="true"
+            >
+              {resultSummary}
+            </p>
+          </div>
+          <div className="sort-field">
+            <label htmlFor="recipe-sort" className="sr-only">
+              Sort recipes
             </label>
             <select
               id="recipe-sort"
@@ -172,7 +190,7 @@ export function RecipeBrowser({ recipes }: RecipeBrowserProps) {
               onChange={(event) =>
                 updateFilters({ sort: event.currentTarget.value as RecipeSort })
               }
-              className="h-10 w-full rounded-lg border border-input bg-background px-3 text-sm focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
+              className="recipe-sort"
             >
               <option value="newest">Newest first</option>
               <option value="oldest">Oldest first</option>
@@ -181,78 +199,80 @@ export function RecipeBrowser({ recipes }: RecipeBrowserProps) {
             </select>
           </div>
         </div>
-      </div>
-
-      <div className="flex min-h-6 flex-wrap items-center justify-between gap-2">
-        <p
-          aria-live="polite"
-          aria-atomic="true"
-          className="text-sm text-muted-foreground"
-        >
-          {resultSummary}
-        </p>
-        {hasActiveFilters && (
-          <Button
-            type="button"
-            variant="ghost"
-            size="sm"
-            onClick={clearFilters}
+        <div className="collection-filter-row">
+          <div
+            className="category-tabs"
+            role="group"
+            aria-label="Recipe categories"
           >
-            Clear filters
-          </Button>
-        )}
-      </div>
-
-      {filteredRecipes.length > 0 ? (
-        <>
-          <ul className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
-            {visibleRecipes.map((recipe, index) => (
-              <RecipeCard
-                key={recipe.id}
-                recipe={recipe}
-                priority={index === 0}
-              />
-            ))}
-          </ul>
-          {visibleCount < filteredRecipes.length && (
-            <div ref={sentinelRef} className="flex justify-center py-3">
-              <Button type="button" variant="outline" onClick={revealMore}>
-                Load more recipes
+            <Button
+              type="button"
+              variant={category === 'all' ? 'default' : 'outline'}
+              className="filter-chip"
+              aria-pressed={category === 'all'}
+              onClick={() => updateFilters({ category: 'all' })}
+            >
+              Everything
+            </Button>
+            {categories.map((item) => (
+              <Button
+                key={item}
+                type="button"
+                variant={category === item ? 'default' : 'outline'}
+                className="filter-chip"
+                aria-pressed={category === item}
+                onClick={() => updateFilters({ category: item })}
+              >
+                {formatRecipeLabel(item)}
               </Button>
-            </div>
+            ))}
+          </div>
+          {hasActiveFilters && (
+            <Button type="button" variant="ghost" onClick={clearFilters}>
+              Clear filters
+            </Button>
           )}
-          {visibleCount >= filteredRecipes.length &&
-            filteredRecipes.length > PAGE_SIZE && (
-              <p className="py-3 text-center text-sm text-muted-foreground">
-                All {filteredRecipes.length} recipes shown
-              </p>
+        </div>
+
+        {filteredRecipes.length > 0 ? (
+          <>
+            <ul className="recipe-grid">
+              {visibleRecipes.map((recipe) => (
+                <RecipeCard key={recipe.id} recipe={recipe} />
+              ))}
+            </ul>
+            {visibleCount < filteredRecipes.length && (
+              <div ref={sentinelRef} className="flex justify-center py-3">
+                <Button type="button" variant="outline" onClick={revealMore}>
+                  Load more recipes
+                </Button>
+              </div>
             )}
-        </>
-      ) : recipes.length > 0 ? (
-        <div className="rounded-xl border border-dashed p-8 text-center">
-          <p className="font-medium">No recipes match these filters</p>
-          <p className="mt-1 text-sm text-muted-foreground">
-            Try another search or clear your filters.
-          </p>
-          <Button
-            type="button"
-            variant="outline"
-            className="mt-4"
-            onClick={clearFilters}
-          >
-            Clear filters
-          </Button>
-        </div>
-      ) : (
-        <div className="rounded-xl border border-dashed p-8 text-center">
-          <p className="font-medium">
-            Your cookbook is ready for its first recipe
-          </p>
-          <p className="mt-1 text-sm text-muted-foreground">
-            Add a recipe to your collection and it will appear here.
-          </p>
-        </div>
-      )}
-    </section>
+          </>
+        ) : recipes.length > 0 ? (
+          <div className="rounded-xl border border-dashed p-8 text-center">
+            <p className="font-medium">No recipes found</p>
+            <p className="mt-1 text-sm text-muted-foreground">
+              Try a different search.
+            </p>
+            <Button
+              type="button"
+              variant="outline"
+              className="mt-4"
+              onClick={clearFilters}
+            >
+              Clear filters
+            </Button>
+          </div>
+        ) : (
+          <div className="rounded-xl border border-dashed p-8 text-center">
+            <p className="font-medium">No recipes yet</p>
+            <p className="mt-1 text-sm text-muted-foreground">
+              Add your first recipe to get started.
+            </p>
+          </div>
+        )}
+      </section>
+    </div>
   );
 }
