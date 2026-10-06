@@ -261,7 +261,7 @@ Start the local server with `pnpm dev --background`, then open the URL reported 
 
 <http://localhost:4321/recipes/pollo-alla-cacciatora/>
 
-The homepage also links to each recipe. The recipe page uses the saved recipe language for its document and content; navigation labels remain English. Use **Print recipe** or your browser's print command for a layout without the photo or navigation, with the original source URL included.
+The homepage also links to each recipe. The recipe page uses the saved recipe language for its document and content; navigation labels remain English. Use **Print recipe** or your browser's print command for an A4 layout with the photo, ingredients, instructions, and original source URL. Recipes with more content may continue onto another page.
 
 ### What “one prompt” means
 

@@ -75,6 +75,9 @@ const facts = [
 
     <article class="flex min-w-0 flex-col gap-9">
       <header class="flex flex-col gap-5">
+        <p class="recipe-print-brand hidden" lang="en">
+          {foodbook.name}
+        </p>
         {(data.categories.length > 0 || data.tags.length > 0) && (
           <div
             class="flex flex-wrap gap-2"

@@ -135,7 +135,7 @@ export function RecipeBrowser({ recipes, tagline }: RecipeBrowserProps) {
           <p className="scrapbook-tagline">{tagline}</p>
           <div className="search-area">
             <label htmlFor="recipe-search" className="search-label">
-              Search recipes
+              Search recipes, ingredients, categories, and tags
             </label>
             <div className="search-field">
               <Search aria-hidden="true" className="search-icon" />
@@ -147,18 +147,20 @@ export function RecipeBrowser({ recipes, tagline }: RecipeBrowserProps) {
                 onChange={(event) =>
                   updateFilters({ query: event.currentTarget.value })
                 }
-                placeholder="Dish or ingredient…"
+                placeholder="Find a recipe…"
                 className="recipe-search"
                 autoComplete="off"
               />
             </div>
-            {hasActiveFilters && (
-              <a href="#collection" className="search-results-link">
-                {filteredRecipes.length}{' '}
-                {filteredRecipes.length === 1 ? 'recipe' : 'recipes'} found
-                <ArrowDown aria-hidden="true" />
-              </a>
-            )}
+            <div className="search-results-container">
+              {hasActiveFilters && (
+                <a href="#collection" className="search-results-link">
+                  {filteredRecipes.length}{' '}
+                  {filteredRecipes.length === 1 ? 'recipe' : 'recipes'} found
+                  <ArrowDown aria-hidden="true" />
+                </a>
+              )}
+            </div>
           </div>
         </div>
         {recipes.length > 0 && <RecipeSuggestion recipes={recipes} />}
