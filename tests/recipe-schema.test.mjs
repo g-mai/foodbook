@@ -5,7 +5,6 @@ import {
   createRecipeSchema,
   ingredientSchema,
 } from '../src/lib/recipe-schema.ts';
-import { foodbookDefaults } from '../src/lib/foodbook-defaults.ts';
 
 // Astro validates image files separately; unit tests use a path-string schema.
 const schema = createRecipeSchema(z.string().min(1));
@@ -14,9 +13,9 @@ const recipe = {
   sourceUrl:
     'https://blog.giallozafferano.it/maniamore/pollo-alla-cacciatora-ricetta/',
   addedAt: '2026-10-05T12:00:00Z',
-  language: foodbookDefaults.language,
-  measurementSystem: foodbookDefaults.measurementSystem,
-  image: '../../assets/recipes/pollo-alla-cacciatora.jpg',
+  language: 'en',
+  measurementSystem: 'metric',
+  image: './images/pollo-alla-cacciatora.jpg',
   imageAlt: 'Chicken pieces in tomato sauce with black olives',
   ingredients: [{ name: 'chicken thighs', quantity: 1, unit: 'kg' }],
 };
@@ -67,7 +66,7 @@ test('ingredients support fractions, ranges, counts, and unspecified amounts', (
   }
 });
 
-test('required fields cannot be omitted or inferred from current preferences', () => {
+test('required recipe fields cannot be omitted', () => {
   for (const key of Object.keys(recipe)) {
     const invalid = { ...recipe };
     delete invalid[key];
@@ -97,7 +96,7 @@ test('invalid metadata and unnecessary fields are rejected', () => {
   }
 });
 
-test('localized and imperial recipes do not depend on cookbook defaults', () => {
+test('recipes retain their recorded language and measurement system', () => {
   const result = schema.parse({
     ...recipe,
     language: 'it-IT',

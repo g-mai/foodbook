@@ -17,7 +17,6 @@ const PAGE_SIZE = 24;
 
 interface RecipeBrowserProps {
   recipes: BrowserRecipe[];
-  tagline: string;
 }
 
 function readLocation(categories: string[]) {
@@ -45,7 +44,7 @@ function writeLocation(next: {
   window.history.replaceState(null, '', nextUrl);
 }
 
-export function RecipeBrowser({ recipes, tagline }: RecipeBrowserProps) {
+export function RecipeBrowser({ recipes }: RecipeBrowserProps) {
   const categories = useMemo(() => getRecipeCategories(recipes), [recipes]);
   const [filters, setFilters] = useState({
     query: '',
@@ -132,7 +131,9 @@ export function RecipeBrowser({ recipes, tagline }: RecipeBrowserProps) {
             <br />
             good today<span className="title-punctuation">?</span>
           </h1>
-          <p className="scrapbook-tagline">{tagline}</p>
+          <p className="scrapbook-tagline">
+            The dishes you love, gathered in one happy place.
+          </p>
           <div className="search-area">
             <label htmlFor="recipe-search" className="search-label">
               Search recipes, ingredients, categories, and tags

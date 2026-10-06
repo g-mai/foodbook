@@ -1,7 +1,5 @@
 ---
 import '@/styles/global.css';
-import '@/styles/custom.css';
-import { foodbook } from '@/lib/foodbook';
 
 interface Props {
   title?: string;
@@ -10,8 +8,8 @@ interface Props {
 }
 
 const {
-  title = foodbook.name,
-  description = foodbook.description,
+  title = 'Foodbook',
+  description = 'My personal recipe collection.',
   language = 'en',
 } = Astro.props;
 ---

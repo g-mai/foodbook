@@ -4,7 +4,6 @@ import { Image } from 'astro:assets';
 import { getCollection, render, type CollectionEntry } from 'astro:content';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { foodbook } from '@/lib/foodbook';
 
 export async function getStaticPaths() {
   const recipes = await getCollection('recipes');
@@ -52,8 +51,8 @@ const facts = [
 ---
 
 <Layout
-  title={`${data.title} | ${foodbook.name}`}
-  description={`${data.title} — ingredients and cooking instructions from ${foodbook.name}.`}
+  title={`${data.title} | Foodbook`}
+  description={`${data.title} — ingredients and cooking instructions from Foodbook.`}
   language={data.language}
 >
   <main class="recipe-page mx-auto flex max-w-6xl flex-col gap-10 px-5 py-8 sm:gap-12 sm:px-8 sm:py-12">
@@ -66,7 +65,7 @@ const facts = [
         href="/"
         class="recipe-back text-sm font-medium underline-offset-4 hover:underline focus-visible:outline-2 focus-visible:outline-offset-4"
       >
-        <span aria-hidden="true">←</span> Back to {foodbook.name}
+        <span aria-hidden="true">←</span> Back to Foodbook
       </a>
       <Button type="button" variant="outline" data-print-recipe>
         Print recipe
@@ -76,7 +75,7 @@ const facts = [
     <article class="flex min-w-0 flex-col gap-9">
       <header class="flex flex-col gap-5">
         <p class="recipe-print-brand hidden" lang="en">
-          {foodbook.name}
+          Foodbook
         </p>
         {(data.categories.length > 0 || data.tags.length > 0) && (
           <div

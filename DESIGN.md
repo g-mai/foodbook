@@ -116,9 +116,9 @@ components:
 
 **Creative North Star: "The Kitchen Scrapbook"**
 
-A personal collection of recipes feels kept and revisited: pale green-white paper, dark green ink, white photo prints, and occasional handwritten notes. The character is playful but adult, with a calm reading surface and small tactile cues rather than decorative clutter.
+This is the visual direction for my personal recipe collector, not a starter-product landing page. Saved recipes should feel kept and revisited: pale green-white paper, dark green ink, white photo prints, and occasional handwritten notes. The character is playful but adult, with a calm reading surface and small tactile cues rather than decorative clutter.
 
-Fraunces gives recipe titles warmth; Geist keeps controls clear; Kalam marks a few personal notes. Photograph-led cards stay aligned while the featured print supplies the single tilt. The user's chosen replacement world establishes the current light theme; the previous look is not a visual constraint.
+Fraunces gives recipe titles warmth; Geist keeps controls clear; Kalam marks a few personal notes. Photograph-led cards stay aligned while the featured print supplies the single tilt. Finding a saved dish and choosing what to cook take priority over setup or promotional content.
 
 **Key Characteristics:**
 

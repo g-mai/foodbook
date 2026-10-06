@@ -1,7 +1,6 @@
 ---
 import Layout from '@/layouts/Layout.astro';
 import { RecipeBrowser } from '@/components/recipe-browser';
-import { foodbook } from '@/lib/foodbook';
 import { getImage } from 'astro:assets';
 import { getCollection } from 'astro:content';
 
@@ -37,7 +36,7 @@ const browserRecipes = await Promise.all(
 );
 ---
 
-<Layout title={foodbook.name} description={foodbook.description}>
+<Layout>
   <main id="top" class="cookbook-shell">
     <header class="cookbook-header">
       <a
@@ -59,15 +58,11 @@ const browserRecipes = await Promise.all(
           <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20M6.5 3H20v19H6.5A2.5 2.5 0 0 1 4 19.5v-14A2.5 2.5 0 0 1 6.5 3Z" />
           <path d="M9 7h6M9 11h4" />
         </svg>
-        <span>{foodbook.name}</span>
+        <span>Foodbook</span>
       </a>
     </header>
 
-    <RecipeBrowser
-      recipes={browserRecipes}
-      tagline={foodbook.tagline}
-      client:load
-    />
+    <RecipeBrowser recipes={browserRecipes} client:load />
     <noscript>
       <style is:inline>
         .suggestion-shuffle {
@@ -82,7 +77,7 @@ const browserRecipes = await Promise.all(
       </p>
     </noscript>
     <footer class="cookbook-footer">
-      <span>{foodbook.name}</span>
+      <span>Foodbook</span>
       <span class="handwritten">Keep something delicious.</span>
       <a href="#top">
         Back to top

@@ -15,7 +15,7 @@ related_targets:
 
 Target: src/pages/index.astro; related: src/components/recipe-browser.tsx, src/components/recipe-card.tsx, src/styles/global.css.
 Mode: Operate with equally prominent recipe discovery.
-Audience: cookbook visitors finding a saved dish or deciding what to cook, often on phones.
+Audience: Gianmarco finding a saved dish or deciding what to cook, often on a phone. Public visitors are secondary; this is not a starter-product or onboarding surface.
 Preserve content, source links, search, category filters, URL restoration, sorting, progressive loading and the static no-JavaScript collection. Recipes and imagery remain supplied content.
 
 ## Direction contract
@@ -24,7 +24,7 @@ THESIS: A kitchen scrapbook gives finding a known dish and discovering another e
 
 OWN-WORLD: Pale green-white paper, dark green ink, leaf-green controls and apricot highlights. Self-hosted Fraunces headings, Geist controls and occasional Kalam notes. White photo-print frames carry quiet offset shadows; index tabs stay aligned and only the suggestion tilts.
 
-STORY: Visitors recognize a personal collection, search by dish or ingredient, filter by cuisine, or get random recipe suggestions without immediate repeats before opening one.
+STORY: I revisit my saved collection, search by dish or ingredient, filter by cuisine, or get random recipe suggestions without immediate repeats before opening one.
 
 FIRST VIEWPORT: Compact wordmark header. Desktop pairs a large two-line question, tagline and search on the left with a medium photo-print suggestion on the right. Category tabs and the collection follow. Mobile stacks compact search, suggestion, then the collection.
 
