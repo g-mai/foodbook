@@ -47,9 +47,15 @@ VS Code settings enable Prettier and ESLint fixes on explicit saves. Use the rec
 
 ## Hosting and publication
 
-`wrangler.jsonc` configures Cloudflare Workers Static Assets to serve `dist/`. `pnpm deploy:dry-run` checks packaging without publishing. There is no live `deploy` script and no GitHub Actions validation or deployment workflow in this repository yet. Do not assume that a push publishes the site or that the local configuration proves a deployment exists.
+`wrangler.jsonc` configures Cloudflare Workers Static Assets to serve `dist/`. Cloudflare's Git repository connection is enabled in the dashboard, with `main` as the production branch. Changes pushed or merged into `main` trigger an automatic build and deployment. This setup was confirmed by the maintainer on October 7, 2026; the dashboard settings are not tracked in this repository. Check the Cloudflare deployment result before claiming that a change is live.
 
-Under the current project safety restriction, agents may use `gh` and `wrangler` only for read-only queries and dry runs, not remote writes, pushes, deployments, deletions, or secret configuration. Leave publishing steps to the maintainer; an authenticated CLI does not itself authorize remote changes.
+`pnpm deploy:dry-run` checks packaging without publishing. There is no live `deploy` script. The GitHub Actions `Validate` workflow runs `pnpm validate` on pull requests targeting `main` and on pushes to `main`, using pnpm 11.1.2 and Node.js 24. Cloudflare handles production deployment; a separate GitHub Actions deployment workflow is not needed.
+
+Remote changes must stay within the user's requested scope. Agents can use GitHub tooling for authorized branch, commit, and pull request operations; authenticated access does not itself authorize unrelated publishing, resource deletion, or secret changes. Publish recipes through a branch and pull request rather than pushing directly to `main`.
+
+The [recipe-import skill](../skills/recipe-import/SKILL.md) prepares Markdown and local photos and opens a recipe-only pull request. The `Auto-merge recipes` workflow runs after successful PR validation, checks the author's current write access and the complete changed-file list, and attempts a squash merge at the exact validated head SHA. It runs only trusted default-branch code with write permissions, never PR code or downloaded CI artifacts. Changes outside recipe/photo additions and updates require manual review.
+
+Automatic recipe merging becomes active once the workflows are on the default branch; no repository variable or extra secret is needed. Protect `main` with the required `Validate` check and complete the [GitHub setup and phone import guide](recipe-import.md) before opening recipe import PRs. This workflow merges directly after CI; GitHub's separate native **Allow auto-merge** setting is not needed. To pause merging, disable **Auto-merge recipes** in GitHub Actions.
 
 Do not commit API tokens or other credentials. A public repository exposes its tracked recipes, photos, and notes. Repository visibility and deployed-site access are separate; a private repository does not make the website private. Provider free-tier limits, CI quotas, agent usage, and optional domain costs still apply.
 
@@ -58,5 +64,6 @@ Do not commit API tokens or other credentials. A public repository exposes its t
 - [Astro content collections](https://docs.astro.build/en/guides/content-collections/)
 - [Astro framework components](https://docs.astro.build/en/guides/framework-components/)
 - [Cloudflare Workers Static Assets](https://developers.cloudflare.com/workers/static-assets/)
+- [Cloudflare Workers Builds and Git integration](https://developers.cloudflare.com/workers/ci-cd/builds/)
 - [Cloudflare static asset limits](https://developers.cloudflare.com/workers/static-assets/billing-and-limitations/)
 - [shadcn/ui with Astro](https://ui.shadcn.com/docs/installation/astro)

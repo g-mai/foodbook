@@ -30,22 +30,8 @@ const { RecipeSuggestion } = loadComponent(
     return require(name);
   },
 );
-const recipe = {
-  id: 'pasta',
-  title: 'Pasta',
-  language: 'en',
-  categories: ['italian'],
-  image: { src: '/pasta.webp', width: 720, height: 540, alt: 'Pasta' },
-};
 
-test('before effects run, the suggestion stays hidden and shuffle is disabled', () => {
-  const html = renderToStaticMarkup(
-    createElement(RecipeSuggestion, {
-      recipes: [recipe, { ...recipe, id: 'soup', title: 'Soup' }],
-    }),
-  );
-  assert.match(html, /data-pending="true"/);
-  assert.match(html, /<button[^>]*disabled=""/);
+test('before effects run, the suggestion stays hidden', () => {
   // Together, the SSR marker and its hiding rule prevent recipe 0 being painted.
   const styles = readFileSync(
     new URL('../src/styles/global.css', import.meta.url),

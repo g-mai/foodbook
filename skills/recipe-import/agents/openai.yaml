@@ -1,0 +1,4 @@
+interface:
+  display_name: 'Foodbook recipe import'
+  short_description: 'Save recipes and photos through trusted GitHub PRs'
+  default_prompt: 'Use $recipe-import to prepare this recipe for my Foodbook and publish a recipe-only pull request after my confirmation.'
