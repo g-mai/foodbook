@@ -41,7 +41,7 @@ The repository and deployed site are public. Personal use does not by itself gra
 
 Show the title, cleaned source, language, units, ingredient/step summary, photo choice, and any unresolved questions. Ask the user to confirm publication unless their current request already explicitly approves the prepared recipe. Resolve uncertainties before publishing.
 
-With a local checkout, run `pnpm format` and `pnpm validate`; inspect the rendered page and print layout when a preview is available. With only GitHub tools, format Markdown consistently with the saved examples, check every required field and image path, and clearly say local validation/preview was not run. GitHub CI is the publication gate; never claim it passed without checking.
+With a local checkout, run `pnpm format` and `pnpm validate`; inspect the rendered page and print layout when a preview is available. Commit the exact file bytes that passed validation. Do not reconstruct file content from terminal output or trim whitespace. Prefer committing and pushing the recipe branch with Git when a local checkout is available. When uploading through GitHub tools, fetch the committed blob afterward and verify that its bytes match the validated local file, including the final newline. With only GitHub tools, format Markdown consistently with the saved examples, check every required field and image path, and clearly say local validation/preview was not run. GitHub CI is the publication gate; never claim it passed without checking.
 
 After confirmation:
 
