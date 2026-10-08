@@ -21,7 +21,7 @@ Normalize the source URL and existing recipes' URLs for comparison:
 - Keep parameters that may identify a recipe, including `id`, `p`, `recipe`, and unknown parameters. Sort remaining parameters. Normalize trailing path slashes, except at the root. Standard URL parsing normalizes the host and default port.
 - Do not conflate different paths, subdomains, HTTP and HTTPS, or recipe identifiers unless a verified redirect or canonical page proves they are the same recipe.
 
-With a local runtime, use the bundled [URL normalizer](scripts/normalize-source-url.mjs): `node skills/recipe-import/scripts/normalize-source-url.mjs 'SOURCE_URL'`. With connector-only access, apply the same rules directly. Follow verified redirects and recipe-specific canonical links before comparing.
+With a local runtime, use the bundled [URL normalizer](scripts/normalize-source-url.mjs): `node .agents/skills/recipe-import/scripts/normalize-source-url.mjs 'SOURCE_URL'`. With connector-only access, apply the same rules directly. Follow verified redirects and recipe-specific canonical links before comparing.
 
 If a normalized URL already exists, show the existing recipe and ask whether to update it or stop. Check open PRs for that source and filename too; resume an existing import instead of creating a second PR. Save the cleaned source URL on new recipes. On updates, preserve the original filename, `sourceUrl`, `addedAt`, and personal notes unless the user explicitly asks to change them.
 

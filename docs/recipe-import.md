@@ -1,6 +1,6 @@
 # Recipe imports from your phone
 
-The [recipe-import skill](../skills/recipe-import/SKILL.md) reads a recipe source, prepares Foodbook Markdown and a local photo, asks for confirmation, and opens a pull request in `g-mai/my-foodbook`. It does not change application code, push to `main`, or merge the PR itself.
+The [recipe-import skill](../.agents/skills/recipe-import/SKILL.md) reads a recipe source, prepares Foodbook Markdown and a local photo, asks for confirmation, and opens a pull request in `g-mai/my-foodbook`. It does not change application code, push to `main`, or merge the PR itself.
 
 The `Validate` workflow checks formatting, lint, tests, types, and the static build. After successful PR validation, `Auto-merge recipes` attempts a squash merge only when:
 
@@ -27,11 +27,11 @@ Cloudflare's existing Git connection remains responsible for production deployme
 
 ## Install and use the skill
 
-Use the `skills/recipe-import/` folder as the skill source. It contains the entrypoint, Codex UI metadata, and a dependency-free URL normalizer. Install it in a client that supports local skills, or package it for a client accepting ZIP skill uploads:
+Use `.agents/skills/recipe-import/` as the canonical skill source. Codex discovers it there, and `.claude/skills` is a symlink to the same skills directory for Claude Code. The folder contains the entrypoint, Codex UI metadata, and a dependency-free URL normalizer. Install it in a client that supports local skills, or package it for a client accepting ZIP skill uploads:
 
 ```sh
 mkdir -p dist
-python3 -m zipfile -c dist/recipe-import.zip skills/recipe-import
+(cd .agents/skills && python3 -m zipfile -c ../../dist/recipe-import.zip recipe-import)
 ```
 
 The archive has one top-level `recipe-import/` folder. It is a local export, not a tracked repository file; a later static build may remove it. A client without a local runtime can follow the same normalization rules and write through its GitHub connector; it must report that local checks were not run and let CI validate the PR. Installing a skill does not grant connector access or permission to write to GitHub.

@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import { spawnSync } from 'node:child_process';
 import test from 'node:test';
 import { fileURLToPath } from 'node:url';
-import { normalizeSourceUrl } from '../skills/recipe-import/scripts/normalize-source-url.mjs';
+import { normalizeSourceUrl } from '../.agents/skills/recipe-import/scripts/normalize-source-url.mjs';
 
 test('source URL normalization removes tracking, fragments, and trailing slashes', () => {
   assert.equal(
@@ -49,7 +49,7 @@ test('invalid URLs, non-web schemes, and embedded credentials are rejected', () 
 test('the portable URL normalizer runs as a standalone CLI', () => {
   const script = fileURLToPath(
     new URL(
-      '../skills/recipe-import/scripts/normalize-source-url.mjs',
+      '../.agents/skills/recipe-import/scripts/normalize-source-url.mjs',
       import.meta.url,
     ),
   );

@@ -16,7 +16,7 @@ This repository is my cookbook and the application behind it, not a reusable sta
 
 The site uses Astro, TypeScript, Tailwind CSS, and React/shadcn UI components. Search and filters run in the browser; the recipe list remains available without JavaScript. There is no application backend or database.
 
-Recipes can be added manually or with the [recipe-import skill](skills/recipe-import/SKILL.md) and a write-capable GitHub connector. GitHub Actions validates PRs and can automatically merge recipe-only changes from current write collaborators after the [one-time GitHub setup](docs/recipe-import.md). Cloudflare's Git connection builds and deploys changes to `main`.
+Recipes can be added manually or with the [recipe-import skill](.agents/skills/recipe-import/SKILL.md) and a write-capable GitHub connector. GitHub Actions validates PRs and can automatically merge recipe-only changes from current write collaborators after the [one-time GitHub setup](docs/recipe-import.md). Cloudflare's Git connection builds and deploys changes to `main`.
 
 ## Run locally
 
