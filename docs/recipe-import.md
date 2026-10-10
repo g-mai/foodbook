@@ -1,8 +1,8 @@
 # Recipe imports from your phone
 
-The [recipe-import skill](../.agents/skills/recipe-import/SKILL.md) reads a recipe source, prepares Foodbook Markdown and a local photo, asks for confirmation, and opens a pull request in `g-mai/my-foodbook`. It does not change application code, push to `main`, or merge the PR itself.
+The [recipe-import skill](../.agents/skills/recipe-import/SKILL.md) reads a URL, supplied text, or magazine/book photograph, prepares Foodbook Markdown and a local photo, asks for confirmation, and opens a pull request in `g-mai/my-foodbook`. It does not change application code, push to `main`, or merge the PR itself.
 
-The `Validate` workflow checks formatting, lint, tests, types, and the static build. After successful PR validation, `Auto-merge recipes` attempts a squash merge only when:
+The `Validate` workflow runs `pnpm validate:recipes` for PRs containing only allowed recipe/photo additions and updates: recipe Markdown formatting plus the Astro build, which validates metadata and referenced images. Other PRs and pushes to `main` run full formatting, lint, tests, types, and build checks. Dependency caching is enabled. The workflow always reports the same required `Validate` check; no branch-rule changes are needed. After successful PR validation, `Auto-merge recipes` attempts a squash merge only when:
 
 - The PR is open, is not a draft, and targets this repository's `main` branch.
 - Its author is a human GitHub user with current `write`, `maintain`, or `admin` repository permission. Having contributed before, being listed as `CONTRIBUTOR`, or being able to open a public PR does not qualify.
@@ -27,22 +27,24 @@ Cloudflare's existing Git connection remains responsible for production deployme
 
 ## Install and use the skill
 
-Use `.agents/skills/recipe-import/` as the canonical skill source. Codex discovers it there, and `.claude/skills` is a symlink to the same skills directory for Claude Code. The folder contains the entrypoint, Codex UI metadata, and a dependency-free URL normalizer. Install it in a client that supports local skills, or package it for a client accepting ZIP skill uploads:
+Use `.agents/skills/recipe-import/` as the canonical skill source. Codex discovers it there, and `.claude/skills` is a symlink to the same skills directory for Claude Code. The folder contains the entrypoint and Codex UI metadata. Install it in a client that supports local skills, or package it for a client accepting ZIP skill uploads:
 
 ```sh
 mkdir -p dist
 (cd .agents/skills && python3 -m zipfile -c ../../dist/recipe-import.zip recipe-import)
 ```
 
-The archive has one top-level `recipe-import/` folder. It is a local export, not a tracked repository file; a later static build may remove it. A client without a local runtime can follow the same normalization rules and write through its GitHub connector; it must report that local checks were not run and let CI validate the PR. Installing a skill does not grant connector access or permission to write to GitHub.
+The archive has one top-level `recipe-import/` folder. It is a local export, not a tracked repository file; a later static build may remove it. A client without a local runtime can follow the documented recipe format and write through its GitHub connector; it must report that local checks were not run and let CI validate the PR. Installing a skill does not grant connector access or permission to write to GitHub.
 
 Example request:
 
-> Import this recipe into my Foodbook: [source URL]. Keep the source language and units, use this photo, and show me the recipe before publishing.
+> Import this recipe into my Foodbook: [source URL]. Use this photo and show me the recipe before publishing.
 
-The agent checks for an existing recipe or open import PR, prepares the recipe and local photo, and asks for confirmation. Once you confirm, it opens a non-draft recipe-only PR. Successful CI triggers the trusted merge workflow; Cloudflare then builds and deploys the merged change. The agent should return the PR link and distinguish CI, merge, and deployment status.
+The agent translates the supplied recipe into English, converts measurements to metric, prepares the local photo, and asks for confirmation. Translation and conversion are always part of imports, including updates; uncertain conversions must be resolved before publication. It does not scan saved recipes or open PRs for duplicates; it checks only proposed file paths to avoid overwriting existing content. Once you confirm, it opens a non-draft recipe-only PR. Successful CI triggers the trusted merge workflow; Cloudflare then builds and deploys the merged change. The agent should return the PR link and distinguish CI, merge, and deployment status.
 
-New imports store cleaned source URLs. Normalization removes known tracking parameters and fragments, sorts remaining parameters, and normalizes trailing path slashes. Recipe-identifying query parameters and unknown parameters remain intact. Existing recipes retain their original filename, source URL, addition date, and personal notes on updates.
+Source attribution is optional and uses one `source` field: a recipe URL or text such as `Delicious magazine, October 2026, page 42`. Omit it when unknown. Valid HTTP(S) URLs display as links; text references display without a link. Existing recipes retain their original filename, source attribution, addition date, and personal notes on updates.
+
+For a magazine import, attach a readable recipe photograph and identify the dish photo you want saved. The recipe page photograph may be used as the local image if that is your choice. The agent asks about unclear or cropped content instead of guessing; a source URL is never required.
 
 ## Verify the first import
 

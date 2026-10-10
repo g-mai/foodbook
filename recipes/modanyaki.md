@@ -1,6 +1,6 @@
 ---
 title: Modanyaki
-sourceUrl: https://japanesecooking101.com/modanyaki-recipe/
+source: https://japanesecooking101.com/modanyaki-recipe/
 addedAt: '2026-10-05T19:12:20Z'
 language: en
 measurementSystem: metric

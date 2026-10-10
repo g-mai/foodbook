@@ -1,6 +1,6 @@
 ---
 title: Ground Meat and Rice with Feta
-sourceUrl: https://www.instagram.com/reel/DeRIw3xzMBq/
+source: https://www.instagram.com/reel/DeRIw3xzMBq/
 addedAt: '2026-10-10T09:13:00Z'
 language: en
 measurementSystem: metric

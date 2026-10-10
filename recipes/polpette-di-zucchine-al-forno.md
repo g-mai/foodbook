@@ -1,6 +1,6 @@
 ---
 title: Baked Zucchini Patties (Polpette di Zucchine al Forno)
-sourceUrl: https://www.cucchiaio.it/ricetta/polpette-di-zucchine-al-forno/
+source: https://www.cucchiaio.it/ricetta/polpette-di-zucchine-al-forno/
 addedAt: '2026-10-07T21:52:48Z'
 language: en
 measurementSystem: metric

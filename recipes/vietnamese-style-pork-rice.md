@@ -1,6 +1,6 @@
 ---
 title: Vietnamese-Style Ground Pork with Rice
-sourceUrl: https://www.hellofresh.nl/recipes/vietnamese-stijl-gehakt-met-rijst-63c7d40f788f6ee4ca33d857
+source: https://www.hellofresh.nl/recipes/vietnamese-stijl-gehakt-met-rijst-63c7d40f788f6ee4ca33d857
 addedAt: '2026-10-08T17:27:00Z'
 language: en
 measurementSystem: metric

@@ -1,6 +1,4 @@
-const recipePath = /^recipes\/[a-z0-9]+(?:-[a-z0-9]+)*\.md$/;
-const photoPath =
-  /^recipes\/images\/[a-z0-9]+(?:-[a-z0-9]+)*\.(?:avif|gif|jpe?g|png|webp)$/;
+import { isRecipeOnlyChange } from './recipe-files.mjs';
 
 export default async function autoMergeRecipes({ github, context, core }) {
   const run = context.payload.workflow_run;
@@ -68,15 +66,7 @@ export default async function autoMergeRecipes({ github, context, core }) {
       ...pullRequestParameters,
       per_page: 100,
     });
-    if (
-      files.length !== pullRequest.changed_files ||
-      !files.some(({ filename }) => recipePath.test(filename)) ||
-      !files.every(
-        ({ filename, status }) =>
-          ['added', 'modified'].includes(status) &&
-          (recipePath.test(filename) || photoPath.test(filename)),
-      )
-    ) {
+    if (!isRecipeOnlyChange(files, pullRequest.changed_files)) {
       core.info(
         `PR #${candidate.number} is not limited to recipe/photo updates.`,
       );

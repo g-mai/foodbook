@@ -1,6 +1,6 @@
 ---
 title: Beef & Mushroom Shepherd’s Pie
-sourceUrl: https://www.hellofresh.com/recipes/beef-and-mushroom-shepherds-pie-65a81f09f9e1c820e370e4d2
+source: https://www.hellofresh.com/recipes/beef-and-mushroom-shepherds-pie-65a81f09f9e1c820e370e4d2
 addedAt: '2026-10-08T15:27:10Z'
 language: en-US
 measurementSystem: imperial

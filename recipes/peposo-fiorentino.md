@@ -1,6 +1,6 @@
 ---
 title: Peposo Fiorentino (Tuscan Pepper Beef)
-sourceUrl: https://www.soniaperonaci.it/peposo-fiorentino/
+source: https://www.soniaperonaci.it/peposo-fiorentino/
 addedAt: '2026-10-06T19:06:22Z'
 language: en
 measurementSystem: metric

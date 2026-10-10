@@ -4,6 +4,7 @@ import { Image } from 'astro:assets';
 import { getCollection, render, type CollectionEntry } from 'astro:content';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { getSourceHref } from '@/lib/recipe-source';
 
 export async function getStaticPaths() {
   const recipes = await getCollection('recipes');
@@ -19,6 +20,7 @@ interface Props {
 
 const { recipe } = Astro.props;
 const { data } = recipe;
+const sourceHref = getSourceHref(data.source);
 const { Content } = await render(recipe);
 const number = new Intl.NumberFormat(data.language, {
   maximumFractionDigits: 20,
@@ -155,13 +157,21 @@ const facts = [
         class="flex justify-between items-start gap-3 border-t border-border pt-6 text-sm text-muted-foreground"
         lang="en"
       >
-        <a
-          href={data.sourceUrl}
-          class="underline underline-offset-4 focus-visible:outline-2 focus-visible:outline-offset-4"
-        >
-          Original recipe
-        </a>
-        <p class="hidden break-all print:block">{data.sourceUrl}</p>
+        {data.source && (
+          <div class="recipe-source min-w-0 break-words">
+            {sourceHref && (
+              <a
+                href={sourceHref}
+                class="underline underline-offset-4 focus-visible:outline-2 focus-visible:outline-offset-4"
+              >
+                Original recipe
+              </a>
+            )}
+            <p class={sourceHref ? 'hidden print:block' : undefined}>
+              Source: {data.source}
+            </p>
+          </div>
+        )}
         <p>
           Added <time datetime={data.addedAt}>{addedDate}</time>
         </p>

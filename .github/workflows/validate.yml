@@ -9,6 +9,7 @@ on:
 
 permissions:
   contents: read
+  pull-requests: read
 
 concurrency:
   group: validate-${{ github.event.pull_request.number || github.ref }}
@@ -24,11 +25,38 @@ jobs:
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
           persist-credentials: false
+      - name: Determine PR validation scope
+        if: github.event_name == 'pull_request'
+        id: scope
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3
+        with:
+          script: |
+            const { isRecipeOnlyChange } = await import(
+              `${process.env.GITHUB_WORKSPACE}/.github/scripts/recipe-files.mjs`
+            );
+            const parameters = {
+              ...context.repo,
+              pull_number: context.payload.pull_request.number,
+            };
+            const { data: pullRequest } = await github.rest.pulls.get(parameters);
+            const files = await github.paginate(github.rest.pulls.listFiles, {
+              ...parameters,
+              per_page: 100,
+            });
+            core.setOutput('recipe-only',
+              pullRequest.head.sha === context.payload.pull_request.head.sha &&
+              isRecipeOnlyChange(files, pullRequest.changed_files)
+            );
       - name: Install pnpm, Node.js, and locked dependencies
         uses: pnpm/setup@fbda4c85fc2e1e08721cd8763afea8f48d60f024
         with:
           version: 11.1.2
           runtime: node@24
           require-lockfile: true
+          cache: true
+      - name: Check recipe formatting, metadata, images, and build
+        if: steps.scope.outputs.recipe-only == 'true'
+        run: pnpm validate:recipes
       - name: Check formatting, lint, tests, types, and build
+        if: steps.scope.outputs.recipe-only != 'true'
         run: pnpm validate

@@ -1,6 +1,6 @@
 ---
 title: Air Fryer Ham with Mustard and Thyme
-sourceUrl: https://www.ah.nl/allerhande/recept/R-R1200417/beenham-uit-de-airfryer
+source: https://www.ah.nl/allerhande/recept/R-R1200417/beenham-uit-de-airfryer
 addedAt: '2026-10-08T16:58:48Z'
 language: en
 measurementSystem: metric

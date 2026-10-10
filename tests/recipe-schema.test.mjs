@@ -10,7 +10,7 @@ import {
 const schema = createRecipeSchema(z.string().min(1));
 const recipe = {
   title: 'Chicken Cacciatore',
-  sourceUrl:
+  source:
     'https://blog.giallozafferano.it/maniamore/pollo-alla-cacciatora-ricetta/',
   addedAt: '2026-10-05T12:00:00Z',
   language: 'en',
@@ -20,7 +20,7 @@ const recipe = {
   ingredients: [{ name: 'chicken thighs', quantity: 1, unit: 'kg' }],
 };
 
-test('minimal recipes retain explicit language, units, and date', () => {
+test('minimal recipes use English and metric and retain the addition date', () => {
   const result = schema.parse(recipe);
   assert.equal(result.language, 'en');
   assert.equal(result.measurementSystem, 'metric');
@@ -67,7 +67,7 @@ test('ingredients support fractions, ranges, counts, and unspecified amounts', (
 });
 
 test('required recipe fields cannot be omitted', () => {
-  for (const key of Object.keys(recipe)) {
+  for (const key of Object.keys(recipe).filter((key) => key !== 'source')) {
     const invalid = { ...recipe };
     delete invalid[key];
     assert.equal(schema.safeParse(invalid).success, false, key);
@@ -77,8 +77,9 @@ test('required recipe fields cannot be omitted', () => {
 test('invalid metadata and unnecessary fields are rejected', () => {
   for (const invalid of [
     { title: ' ' },
-    { sourceUrl: 'not-a-url' },
-    { sourceUrl: 'javascript:alert(1)' },
+    { source: ' ' },
+    { source: null },
+    { sourceUrl: 'https://example.com/recipe' },
     { addedAt: '2026-02-30T12:00:00Z' },
     { addedAt: '2026-10-05' },
     { language: 'en_US' },
@@ -96,16 +97,34 @@ test('invalid metadata and unnecessary fields are rejected', () => {
   }
 });
 
-test('recipes retain their recorded language and measurement system', () => {
-  const result = schema.parse({
-    ...recipe,
-    language: 'it-IT',
-    measurementSystem: 'imperial',
-    prepMinutes: 0,
-    cookMinutes: 0,
-  });
-  assert.equal(result.language, 'it-IT');
-  assert.equal(result.measurementSystem, 'imperial');
+test('source accepts a URL, a printed reference, or omission', () => {
+  assert.equal(schema.parse(recipe).source, recipe.source);
+  assert.equal(
+    schema.parse({ ...recipe, source: '  Delicious, October 2026, p. 42  ' })
+      .source,
+    'Delicious, October 2026, p. 42',
+  );
+  const withoutSource = { ...recipe };
+  delete withoutSource.source;
+  assert.equal(schema.parse(withoutSource).source, undefined);
+});
+
+test('recipes reject non-English languages and non-metric measurement systems', () => {
+  for (const language of ['it-IT', 'nl', 'fr']) {
+    assert.equal(schema.safeParse({ ...recipe, language }).success, false);
+  }
+  assert.equal(
+    schema.safeParse({ ...recipe, measurementSystem: 'imperial' }).success,
+    false,
+  );
+});
+
+test('unknown timings may be omitted and zero-minute timings are valid', () => {
+  assert.equal(schema.parse(recipe).prepMinutes, undefined);
+  assert.equal(schema.parse(recipe).cookMinutes, undefined);
+  const result = schema.parse({ ...recipe, prepMinutes: 0, cookMinutes: 0 });
+  assert.equal(result.prepMinutes, 0);
+  assert.equal(result.cookMinutes, 0);
 });
 
 test('timestamps support newest-added sorting, including fractional seconds', () => {

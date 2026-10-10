@@ -19,11 +19,12 @@ Use pnpm with Node.js 22.22.3+ on the 22.x line, 24.16.0+ on the 24.x line, or 2
 | `pnpm test`                  | Run schema, collection, browser, and suggestion tests           |
 | `pnpm check`                 | Check Astro and TypeScript types                                |
 | `pnpm build`                 | Generate the static website in `dist/`                          |
+| `pnpm validate:recipes`      | Check recipe formatting, metadata, local images, and build      |
 | `pnpm validate`              | Check formatting, lint, tests, types, and the static build      |
 | `pnpm preview`               | Build and preview the static website locally                    |
 | `pnpm deploy:dry-run`        | Build and check Wrangler packaging without publishing           |
 
-Run `pnpm format` after editing files, then `pnpm validate` before handing off changes. Validation does not deploy. Do not hand-edit generated files or `pnpm-lock.yaml`; use pnpm for dependency changes.
+Run `pnpm format` after editing files, then `pnpm validate` before handing off application, skill, workflow, or documentation changes. For recipe/photo additions and updates only, use `pnpm validate:recipes`; it checks recipe Markdown formatting and uses the Astro build to validate metadata and referenced images. Review cooking instructions and uncertain conversions separately. Recipe deletions or renames use full validation. Validation does not deploy. Do not hand-edit generated files or `pnpm-lock.yaml`; use pnpm for dependency changes.
 
 ## Application structure
 
@@ -49,7 +50,7 @@ VS Code settings enable Prettier and ESLint fixes on explicit saves. Use the rec
 
 `wrangler.jsonc` configures Cloudflare Workers Static Assets to serve `dist/`. Cloudflare's Git repository connection is enabled in the dashboard, with `main` as the production branch. Changes pushed or merged into `main` trigger an automatic build and deployment. This setup was confirmed by the maintainer on October 7, 2026; the dashboard settings are not tracked in this repository. Check the Cloudflare deployment result before claiming that a change is live.
 
-`pnpm deploy:dry-run` checks packaging without publishing. There is no live `deploy` script. The GitHub Actions `Validate` workflow runs `pnpm validate` on pull requests targeting `main` and on pushes to `main`, using pnpm 11.1.2 and Node.js 24. Cloudflare handles production deployment; a separate GitHub Actions deployment workflow is not needed.
+`pnpm deploy:dry-run` checks packaging without publishing. There is no live `deploy` script. The GitHub Actions `Validate` workflow runs on every pull request targeting `main` and every push to `main`, using pnpm 11.1.2 and Node.js 24 with lockfile-keyed pnpm store caching. PRs containing only allowed recipe/photo additions and updates run `pnpm validate:recipes`, skipping application lint, tests, and type checking while retaining the static build. All other PRs and pushes to `main` run full `pnpm validate`. Scope detection requires the complete changed-file list and the current PR head to match the event; it uses the same file eligibility helper as automatic merging. The required check remains named `Validate`, so existing branch rules need no change. Cloudflare handles production deployment; a separate GitHub Actions deployment workflow is not needed.
 
 Remote changes must stay within the user's requested scope. Agents can use GitHub tooling for authorized branch, commit, and pull request operations; authenticated access does not itself authorize unrelated publishing, resource deletion, or secret changes. Publish recipes through a branch and pull request rather than pushing directly to `main`.
 

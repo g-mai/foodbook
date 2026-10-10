@@ -1,6 +1,6 @@
 ---
 title: Pasta with Broccoli and Anchovies
-sourceUrl: https://www.agrodolce.it/ricette/pasta-con-broccoli-e-acciughe
+source: https://www.agrodolce.it/ricette/pasta-con-broccoli-e-acciughe
 addedAt: '2026-10-05T18:45:50Z'
 language: en
 measurementSystem: metric
