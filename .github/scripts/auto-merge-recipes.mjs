@@ -103,11 +103,73 @@ export default async function autoMergeRecipes({ github, context, core }) {
         continue;
       }
       core.info(`Merged recipe PR #${candidate.number} at ${run.head_sha}.`);
+      await deleteMergedBranch(
+        { github, repository, core },
+        current,
+        run.head_sha,
+      );
     } catch (error) {
       if (![403, 405, 409].includes(error.status)) throw error;
       core.warning(
         `PR #${candidate.number} remains open: GitHub refused the merge (${error.status}). Review its checks and branch rules, then rerun validation.`,
       );
     }
+  }
+}
+
+async function deleteMergedBranch(
+  { github, repository, core },
+  pullRequest,
+  sha,
+) {
+  const { head, base, number } = pullRequest;
+  if (
+    head.repo?.full_name !== `${repository.owner}/${repository.repo}` ||
+    !head.ref ||
+    head.ref === base.ref ||
+    head.ref === head.repo.default_branch
+  ) {
+    core.info(
+      `PR #${number}: branch cleanup skipped for an external or base/default branch.`,
+    );
+    return;
+  }
+
+  const parameters = { ...repository, ref: `heads/${head.ref}` };
+  let checkingReference = false;
+  try {
+    const { data: openPullRequests } = await github.rest.pulls.list({
+      ...repository,
+      state: 'open',
+      head: `${repository.owner}:${head.ref}`,
+      per_page: 1,
+    });
+    if (openPullRequests.length > 0) {
+      core.info(`Keeping branch ${head.ref}: another open PR uses it.`);
+      return;
+    }
+
+    checkingReference = true;
+    const { data: reference } = await github.rest.git.getRef(parameters);
+    if (
+      reference.ref !== `refs/heads/${head.ref}` ||
+      reference.object.sha !== sha
+    ) {
+      core.info(
+        `Keeping branch ${head.ref}: it no longer points to the merged PR head.`,
+      );
+      return;
+    }
+
+    await github.rest.git.deleteRef(parameters);
+    core.info(`Deleted merged recipe branch ${head.ref}.`);
+  } catch (error) {
+    if (checkingReference && error.status === 404) {
+      core.info(`Merged recipe branch ${head.ref} is already absent.`);
+      return;
+    }
+    core.warning(
+      `PR #${number} was merged, but branch ${head.ref} could not be deleted (${error.status ?? 'API error'}).`,
+    );
   }
 }

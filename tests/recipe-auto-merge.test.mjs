@@ -19,7 +19,11 @@ function createHarness(options = {}) {
       sha: 'base-commit',
       repo: { full_name: 'g-mai/my-foodbook' },
     },
-    head: { sha: 'validated-commit' },
+    head: {
+      sha: 'validated-commit',
+      ref: 'recipe-import/tomato-pasta',
+      repo: { full_name: 'g-mai/my-foodbook', default_branch: 'main' },
+    },
     changed_files: 2,
     ...options.pullRequest,
   };
@@ -35,6 +39,8 @@ function createHarness(options = {}) {
   const logs = [];
   const fileRequests = [];
   const permissionRequests = [];
+  const deletionRequests = [];
+  const referenceRequests = [];
   let pullRequestReads = 0;
   const github = {
     rest: {
@@ -61,6 +67,12 @@ function createHarness(options = {}) {
         },
       },
       pulls: {
+        list: async (parameters) => {
+          assert.equal(parameters.state, 'open');
+          assert.equal(parameters.head, `g-mai:${pullRequest.head.ref}`);
+          if (options.listError) throw options.listError;
+          return { data: options.openPullRequests ?? [] };
+        },
         get: async () => {
           pullRequestReads += 1;
           return {
@@ -80,6 +92,24 @@ function createHarness(options = {}) {
           return { data: options.result ?? { merged: true } };
         },
       },
+      git: {
+        getRef: async (parameters) => {
+          assert.equal(mergeRequests.length, 1, 'Cleanup must follow a merge');
+          referenceRequests.push(parameters);
+          if (options.referenceError) throw options.referenceError;
+          return {
+            data: {
+              ref: `refs/heads/${pullRequest.head.ref}`,
+              object: { sha: options.branchSha ?? 'validated-commit' },
+            },
+          };
+        },
+        deleteRef: async (parameters) => {
+          deletionRequests.push(parameters);
+          if (options.deletionError) throw options.deletionError;
+          return { status: 204 };
+        },
+      },
     },
     paginate: async (method, parameters) => (await method(parameters)).data,
   };
@@ -93,6 +123,8 @@ function createHarness(options = {}) {
     mergeRequests,
     fileRequests,
     permissionRequests,
+    deletionRequests,
+    referenceRequests,
     logs,
   };
 }
@@ -264,4 +296,107 @@ test('a refused merge response is not reported as a successful publication', asy
   assert.ok(
     !harness.logs.some((message) => message.startsWith('Merged recipe')),
   );
+});
+
+test('a successful recipe merge deletes its branch in this repository', async () => {
+  const harness = createHarness();
+  await autoMergeRecipes(harness);
+  const parameters = {
+    owner: 'g-mai',
+    repo: 'my-foodbook',
+    ref: 'heads/recipe-import/tomato-pasta',
+  };
+  assert.deepEqual(harness.referenceRequests, [parameters]);
+  assert.deepEqual(harness.deletionRequests, [parameters]);
+  assert.ok(
+    harness.logs.some((message) => message.startsWith('Deleted merged')),
+  );
+});
+
+test('refused and failed merges never attempt branch cleanup', async () => {
+  for (const options of [
+    { result: { merged: false, message: 'Blocked' } },
+    { mergeError: Object.assign(new Error('Merge refused'), { status: 403 }) },
+    { mergeError: Object.assign(new Error('Merge refused'), { status: 409 }) },
+  ]) {
+    const harness = createHarness(options);
+    await autoMergeRecipes(harness);
+    assert.deepEqual(harness.referenceRequests, []);
+    assert.deepEqual(harness.deletionRequests, []);
+  }
+});
+
+test('fork branches and base/default branches are never deleted', async () => {
+  for (const head of [
+    { ref: 'recipe-import/pasta', repo: { full_name: 'someone/my-foodbook' } },
+    { ref: 'recipe-import/pasta', repo: null },
+    {
+      ref: 'main',
+      repo: { full_name: 'g-mai/my-foodbook', default_branch: 'main' },
+    },
+    {
+      ref: 'develop',
+      repo: { full_name: 'g-mai/my-foodbook', default_branch: 'develop' },
+    },
+  ]) {
+    const harness = createHarness({
+      pullRequest: { head: { ...head, sha: 'validated-commit' } },
+    });
+    await autoMergeRecipes(harness);
+    assert.equal(harness.mergeRequests.length, 1);
+    assert.deepEqual(harness.referenceRequests, []);
+    assert.deepEqual(harness.deletionRequests, []);
+  }
+});
+
+test('branches with newer commits or another open PR are retained', async () => {
+  for (const options of [
+    { branchSha: 'new-work-after-merge' },
+    { openPullRequests: [{ number: 8 }] },
+  ]) {
+    const harness = createHarness(options);
+    await autoMergeRecipes(harness);
+    assert.equal(harness.mergeRequests.length, 1);
+    assert.deepEqual(harness.deletionRequests, []);
+  }
+});
+
+test('missing branches and cleanup failures do not misreport a successful merge', async () => {
+  for (const options of [
+    {
+      listError: Object.assign(new Error('Repository unavailable'), {
+        status: 404,
+      }),
+    },
+    { referenceError: Object.assign(new Error('Missing'), { status: 404 }) },
+    {
+      deletionError: Object.assign(new Error('Already deleted'), {
+        status: 404,
+      }),
+    },
+    {
+      deletionError: Object.assign(new Error('Protected branch'), {
+        status: 422,
+      }),
+    },
+    { deletionError: Object.assign(new Error('Forbidden'), { status: 403 }) },
+    { referenceError: new Error('API unavailable') },
+  ]) {
+    const harness = createHarness(options);
+    await autoMergeRecipes(harness);
+    assert.ok(
+      harness.logs.some((message) => message.startsWith('Merged recipe')),
+    );
+    assert.ok(
+      !harness.logs.some((message) => message.includes('remains open')),
+    );
+    assert.ok(
+      !harness.logs.some((message) => message.startsWith('Deleted merged')),
+    );
+    assert.ok(
+      harness.logs.some((message) =>
+        /already absent|could not be deleted/.test(message),
+      ),
+    );
+  }
 });

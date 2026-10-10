@@ -12,6 +12,8 @@ The `Validate` workflow runs `pnpm validate:recipes` for PRs containing only all
 
 These checks are enforced by the trusted default-branch workflow, not by skill instructions, labels, PR text, branch names, or the account rerunning CI. Validation runs with read-only repository access; the merge job never checks out PR code, installs PR dependencies, reads CI artifacts, or restores a PR cache.
 
+After a successful merge, the workflow deletes the PR's source branch when it belongs to this repository, is neither the base nor default branch, has no other open PR, and still points to the validated head when checked. Fork branches and branches with newer commits are retained. Cleanup is best effort: already-deleted branches are harmless, and deletion failures are logged without reporting the successful merge as a failure. The GitHub ref deletion API does not accept an expected SHA, so the last head check and deletion are separate requests.
+
 ## One-time GitHub setup
 
 Publish the workflow, script, skill, tests, and documentation together in a manually reviewed PR. Automatic recipe merging becomes active once the workflows are on the default branch; no repository variable or extra secret is needed. Complete the branch protection and collaborator setup before opening recipe import PRs.
@@ -53,6 +55,7 @@ Use one real recipe that is not already saved, publish its recipe and photo in a
 1. **Validate** succeeds.
 2. **Auto-merge recipes** records the author's permission and recipe-only eligibility decision and merges the tested SHA. If your connector authors PRs as a bot instead of your human account, they remain manual-review PRs; do not broaden the policy to all bots.
 3. The PR is squash-merged into `main` without a manual merge action.
+   Its source branch is deleted if eligible for cleanup; check the workflow log if it remains.
 4. Cloudflare reports a successful production deployment, and the new recipe page and photo load correctly.
 
 To verify exclusions without deliberately merging anything, use draft test PRs or inspect the automated regression tests: outside/read-only authors, unvalidated heads, code changes, and deletions must not reach the merge API. A live outside-author check needs an account without repository write permission; the local test suite simulates it without granting access or publishing a PR.
